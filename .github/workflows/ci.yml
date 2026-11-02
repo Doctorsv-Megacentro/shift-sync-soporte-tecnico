@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Tipos, lint y pruebas
+        run: npm run check
+
+      - name: Documentación obligatoria (plan §9.3)
+        run: npm run docs:check
+
+      - name: Compilar
+        run: npm run build
+
+      # Lo que se despliega debe estar limpio. Las vulnerabilidades de las
+      # herramientas de desarrollo se revisan aparte (ver ADR-0012).
+      - name: Auditar dependencias de producción
+        run: npm audit --omit=dev --audit-level=high
