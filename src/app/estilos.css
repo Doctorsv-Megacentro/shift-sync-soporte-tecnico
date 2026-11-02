@@ -1,0 +1,27 @@
+/**
+ * Hoja de estilos raíz: carga Tailwind v4 y los tokens del sistema de diseño.
+ * Documentado en docs/diseno/tokens.md.
+ */
+
+@import 'tailwindcss';
+@import '../ui/tokens.css';
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente-texto);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--fuente-titulo);
+  letter-spacing: -0.02em;
+}
+
+/* Foco visible en todo control (plan §8, «Forma») */
+:focus-visible {
+  outline: 2px solid var(--primario);
+  outline-offset: 2px;
+}

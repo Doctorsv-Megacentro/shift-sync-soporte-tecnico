@@ -1,0 +1,101 @@
+/**
+ * Tokens del sistema de diseño. Transcritos del plan §8 y documentados en
+ * docs/diseno/tokens.md. Son variables CSS para poder agregar modo oscuro
+ * después sin tocar componentes.
+ */
+
+:root {
+  /* Tipografía */
+  --fuente-titulo: 'Archivo', system-ui, sans-serif;
+  --fuente-texto: 'IBM Plex Sans', system-ui, sans-serif;
+  --fuente-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Neutros */
+  --fondo: #f4f5f7;
+  --superficie: #ffffff;
+  --borde: #d9dce3;
+  --borde-suave: #e4e6eb;
+  --borde-suave-2: #eef0f3;
+  --texto: #171a21;
+  --texto-2: #3d4350;
+  --texto-3: #5d6472;
+  --apagado: #8a919e;
+
+  /* Acentos */
+  --primario: #0f6f74;
+  --primario-hover: #0b5c60;
+  --primario-suave: #d8ecec;
+  --cambio-jefatura: #b4530b;
+  --aviso-fondo: #fff8f1;
+  --aviso-borde: #f0c9a3;
+  --aviso-texto: #8f4108;
+  --exito-fondo: #e0efe3;
+  --exito-texto: #225532;
+  --peligro: #8f1d1d;
+
+  /* Turnos: categoría de color según la hora de entrada (plan §5.3) */
+  --turno-manana-fondo: #d8ecec;
+  --turno-manana-texto: #0b5c60;
+  --turno-tarde-fondo: #fbe8d6;
+  --turno-tarde-texto: #8f4108;
+  --turno-noche-fondo: #f0e5f7;
+  --turno-noche-texto: #6a3389;
+  --turno-libre-fondo: #eceef2;
+  --turno-libre-texto: #5d6472;
+  --turno-vacaciones-fondo: #e0efe3;
+  --turno-vacaciones-texto: #2a6439;
+
+  /* Roles: etiqueta (fondo/texto) y borde del grupo */
+  --rol-n1-fondo: #d8ecec;
+  --rol-n1-texto: #0b5c60;
+  --rol-n1-borde: #0f6f74;
+  --rol-n2-fondo: #e2ebfb;
+  --rol-n2-texto: #2a55a1;
+  --rol-n2-borde: #2f5fb3;
+  --rol-supervisor-fondo: #fbe8d6;
+  --rol-supervisor-texto: #8f4108;
+  --rol-supervisor-borde: #c2560f;
+  --rol-coordinador-fondo: #fbf0c9;
+  --rol-coordinador-texto: #6b4e00;
+  --rol-coordinador-borde: #a77b00;
+  --rol-terceria-fondo: #f0e5f7;
+  --rol-terceria-texto: #6a3389;
+  --rol-terceria-borde: #7e3fa8;
+  --rol-producto-fondo: #fbe3ee;
+  --rol-producto-texto: #962057;
+  --rol-producto-borde: #c0306f;
+  --rol-redes-fondo: #e7e6fb;
+  --rol-redes-texto: #4338a8;
+  --rol-redes-borde: #4f46e5;
+  --rol-salas-fondo: #e0efe3;
+  --rol-salas-texto: #2a6439;
+  --rol-salas-borde: #2f7d4a;
+  --rol-qa-fondo: #dff1f5;
+  --rol-qa-texto: #0e5d73;
+  --rol-qa-borde: #0e7490;
+  --rol-activofijo-fondo: #ece8e2;
+  --rol-activofijo-texto: #57493a;
+  --rol-activofijo-borde: #8a7d6b;
+
+  /* Sede: etiqueta con contorno neutro; «Sin sede» más tenue */
+  --sede-borde: #c4c8d0;
+  --sinsede-fondo: #e4e6eb;
+  --sinsede-texto: #8a919e;
+
+  /* Severidad de conflictos */
+  --sev-alta-fondo: #fdeaea;
+  --sev-alta-texto: #8f1d1d;
+  --sev-media-fondo: #fbe8d6;
+  --sev-media-texto: #8f4108;
+  --sev-baja-fondo: #eceef2;
+  --sev-baja-texto: #3d4350;
+  --sev-resuelto-fondo: #e0efe3;
+  --sev-resuelto-texto: #2a6439;
+
+  /* Forma */
+  --radio-tarjeta: 14px;
+  --radio-control: 10px;
+  --radio-chip: 999px;
+  --radio-etiqueta: 5px;
+  --tactil-min: 44px;
+}
