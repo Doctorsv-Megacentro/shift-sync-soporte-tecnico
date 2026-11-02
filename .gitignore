@@ -1,0 +1,27 @@
+# Datos personales reales — nunca al repo (plan §2.5, ADR-0011)
+referencias/
+
+# Entorno
+.env
+.env.*
+!.env.example
+
+# Excel: solo se commitea el fixture anonimizado
+*.xlsx
+!tests/fixtures/*.xlsx
+
+# Dependencias y build
+node_modules/
+dist/
+.vercel/
+coverage/
+playwright-report/
+test-results/
+
+# Sistema operativo / editores
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
