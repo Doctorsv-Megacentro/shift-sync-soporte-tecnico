@@ -14,9 +14,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
+    "test:local": "vitest run --config vitest.local.config.ts",
     "check": "tsc -p tsconfig.json && eslint . && vitest run",
     "e2e": "playwright test",
-    "docs:check": "tsx scripts/check-docs.ts"
+    "docs:check": "tsx scripts/check-docs.ts",
+    "anonimizar": "tsx scripts/anonimizar-excel.ts"
   },
   "dependencies": {
     "react": "^19.1.0",
