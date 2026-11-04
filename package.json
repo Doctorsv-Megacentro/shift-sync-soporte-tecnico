@@ -15,14 +15,17 @@
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
     "test:local": "vitest run --config vitest.local.config.ts",
+    "test:db": "vitest run --config vitest.db.config.ts",
     "check": "tsc -p tsconfig.json && eslint . && vitest run",
     "e2e": "playwright test",
     "docs:check": "tsx scripts/check-docs.ts",
     "anonimizar": "tsx scripts/anonimizar-excel.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-router-dom": "^7.18.5",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
