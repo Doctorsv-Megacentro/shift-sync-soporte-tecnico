@@ -23,6 +23,7 @@ import { addDays, firstOfMonth } from '@/domain/time.ts';
 import { validateMonth } from '@/domain/validate.ts';
 import { parseWorkbook, resumirMes } from '@/domain/workbook.ts';
 import type { ParsedMonth, ParsedWorkbook, Warning } from '@/domain/types.ts';
+import { EnlaceOperacion } from './EnlaceOperacion.tsx';
 
 type Estado =
   | { tipo: 'vacio' }
@@ -152,6 +153,8 @@ export function Fuente() {
   return (
     <div style={{ maxWidth: 760 }}>
       <h1 style={{ fontSize: 22, margin: '0 0 20px' }}>Fuente de datos</h1>
+
+      <EnlaceOperacion />
 
       <section
         style={{
