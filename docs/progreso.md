@@ -7,8 +7,8 @@ Estado del MVP de ShiftSync v2. Se actualiza en **cada** cambio (Definición de 
 | 0 | Repo, herramientas y esqueleto de docs | **Hecho** | `check`, `docs:check` y `build` en verde |
 | 1 | Dominio: leer la hoja | **Hecho** | Opus. 189 pruebas, verificado contra el Excel real |
 | — | Demo local (adelanto de la Fase 3, fuera del plan) | **Hecho** | Probada en navegador. ADR-0013/0014 Propuestos |
-| 2 | Base de datos, acceso de jefatura y Fuente de datos | **Siguiente** | Opus. Necesita proyecto Supabase nuevo |
-| 3 | Vista empleado + enlace de la operación | Sin empezar | Sonnet. **Primer entregable usable** |
+| 2 | Base de datos, acceso de jefatura y Fuente de datos | **Hecho** | Opus. Esquema + RLS + RPC probados contra Supabase local; falta proyecto en la nube |
+| 3 | Vista empleado + enlace de la operación | **Siguiente** | Sonnet. **Primer entregable usable** |
 | 4 | Horario completo | Sin empezar | Sonnet |
 | 5 | Cambiar un día + registro de cambios | Sin empezar | Sonnet |
 | 6 | Panel y conflictos | Sin empezar | Opus |
@@ -78,17 +78,61 @@ Probada de punta a punta con `npm run dev` y el fixture anonimizado, en el naveg
 Sin errores en consola. `npm run check`, `npm run docs:check` y `npm run build` en verde con el
 código de la demo incluido.
 
+**4 nov 2026 · Fase 2 cerrada: base de datos, acceso de jefatura y Fuente de datos.**
+
+`supabase/migrations/20261104172348_esquema_inicial.sql`: las 8 tablas del modelo, RLS en todas, y
+las RPC `is_admin`, `publish_import`, `activate_import`. **No se probó solo leyendo el SQL**: se
+instaló el CLI de Supabase, se arrancó un stack local (Docker, puertos 55320–55329 para no chocar con
+otros proyectos que ya corrían en esta máquina) y se aplicó la migración de verdad con
+`supabase db reset`. Eso encontró **dos errores reales** que una revisión de código no habría visto:
+
+- `is_admin()` estaba definida *después* de las políticas RLS que la usan — Postgres aplica el
+  archivo en orden y falló al crear la primera política.
+- `revoke all on function … from public` no le quita permiso a `anon`: Supabase da `EXECUTE` a `anon`
+  por defecto en toda función nueva del esquema `public`, así que `anon` podía llamar a `is_admin()`
+  hasta que se revocó explícitamente de `anon` y `authenticated`.
+
+Con eso corregido, **21 pruebas de base de datos** (`tests/db/`, `npm run test:db`) verifican contra
+el stack local: `anon` no lee ni escribe ninguna tabla, un usuario autenticado que no es admin no
+puede publicar, `publish_import` crea personas y entradas correctamente, respeta un `display_name`
+corregido a mano, `content_hash` evita publicar el mismo archivo dos veces, y `activate_import`
+cambia la versión activa de un mes y rechaza uno que el import no cubre.
+
+Encima de la base: `src/data/` (`supabase.ts`, `auth.ts`, `imports.ts`, `content-hash.ts`),
+`app/useSesion.ts` + `app/RutaJefatura.tsx` (el guardián: sin sesión → login con Google; con sesión
+sin acceso → «No tienes acceso de jefatura»; con acceso → el layout con menú), la pantalla
+**Fuente de datos** completa (`src/features/fuente/Fuente.tsx`: subir, resumen de lectura con
+checkboxes por mes, diff contra el mes anterior, publicar, historial con «Volver a esta versión»), y
+`api/hoja.ts` (escrito según ADR-0005, sin probar contra una Google Sheet real porque esa decisión
+sigue sin resolverse).
+
+**Probado de punta a punta en el navegador**, no solo con pruebas automáticas: se creó un usuario de
+prueba admin contra el stack local, se inyectó su sesión en la página, y se subió el fixture
+anonimizado real. El resumen de lectura mostró los conteos exactos ya verificados en la Fase 1
+(103/26/8 en Noviembre, 98/31 en Octubre) y el diff automático dio «12 cambios de departamento y
+1 salida» — el mismo caso de control del plan §7.3. Publicar, ver el historial y «Volver a esta
+versión» cambiaron la versión activa del mes correctamente sin tocar los demás meses. Con un usuario
+autenticado que no estaba en `admins`, la pantalla mostró «No tienes acceso de jefatura» tal cual.
+
+Necesitó una decisión técnica nueva: [ADR-0015](adr/0015-enrutador.md) (React Router), **Aceptado**
+porque es una decisión dentro del stack ya elegido, no una regla de negocio.
+
+El stack local de Supabase y el servidor de desarrollo se apagaron al terminar
+(`supabase stop`); nada quedó corriendo en segundo plano.
+
 ## Siguiente paso
 
-**Fase 2 — Base de datos, acceso de jefatura y Fuente de datos** (3 días, Opus). Reutiliza
-`src/domain/` y `src/data/excel.ts` tal cual: nada de lo construido en la Fase 1 ni en la demo se
-tira, salvo la propia pantalla de demo, que se retira cuando la Fase 3 construya la vista de empleado
-real.
+**Fase 3 — Vista empleado + enlace de la operación** (3 días, Sonnet). Construye `get_shared_view` y
+`domain/share.ts` (alcance «Toda la operación», vencimiento «Fin de mes»), `domain/overlay.ts`
+(hoja + cambios de jefatura — hoy no hay cambios de jefatura que mezclar, así que puede ser simple al
+inicio), y la pantalla de empleado real, pixel-perfect a las capturas 01–04 y con móvil 390 px sin
+scroll horizontal. Reutiliza `domain/presence.ts` tal cual: ya tiene buscador, semana, «quién está
+ese día» y sus 29 pruebas, construidos para la demo.
 
-Antes de arrancarla, conviene cerrar dos cosas:
+Cuando la vista real exista, `src/features/demo/` se retira (ADR-0014).
 
-- El visto bueno de Ado a los ADR-0013 y 0014 (ambos en **Propuesto**).
-- La pregunta abierta 4 de más abajo (correos de jefatura), que bloquea `admins`.
+Antes de arrancarla, conviene cerrar el visto bueno de Ado a los ADR-0013 y 0014 (ambos en
+**Propuesto**; ninguno bloquea técnicamente, pero son desviaciones del plan que piden su ratificación).
 
 ### Hallazgos sobre la hoja real que quedan para después
 
@@ -111,8 +155,9 @@ dependa de ellas se detiene por esto. No se asumen respuestas.
 como lector el correo de una cuenta de servicio? Ninguna de las dos modifica la hoja.
 
 Hoy la hoja está privada. Si ninguna opción es posible, el MVP queda **solo con Excel** y «Leer con
-mi cuenta de Google» pasa a Próximamente. *Las fases 0 y 1 no dependen de esto;* la 2 sí, para
-`/api/hoja`.
+mi cuenta de Google» pasa a Próximamente. `api/hoja.ts` ya está escrito siguiendo el ADR, pero nunca
+se probó contra una Google Sheet real porque esta pregunta sigue abierta; la pestaña correspondiente
+en Fuente de datos queda marcada «Próximamente» mientras tanto.
 
 ### 2. Umbrales de las reglas de conflicto
 
@@ -138,4 +183,6 @@ ya repartidos, redirigir o retirar? Afecta a la Fase 8.
 ### 4. Correos con acceso de jefatura
 
 ¿Qué correos van en la tabla `admins`? Se cargan por SQL siguiendo el runbook; **no van en el
-repo**. Afecta a la Fase 2.
+repo**. Ya no bloquea el desarrollo: la Fase 2 se probó con un usuario de prueba contra el stack
+local. Sí bloquea **producción**: hace falta antes de desplegar, para que jefatura pueda entrar de
+verdad.

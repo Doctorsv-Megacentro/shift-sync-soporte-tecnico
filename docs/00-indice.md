@@ -43,9 +43,10 @@ Una ficha por carpeta de `src/features/`. `docs:check` falla si falta alguna.
 | Funcionalidad | Ficha |
 |---|---|
 | Carga del horario (Excel y Google Sheet) | [features/carga-horario.md](features/carga-horario.md) |
+| Fuente de datos (subir, publicar, historial, acceso de jefatura) | [features/fuente.md](features/fuente.md) |
 | Demo local de la vista de empleado (desechable, ADR-0014) | [features/demo.md](features/demo.md) |
 
-Pendientes, según se construyan: `empleado`, `fuente`, `panel`, `horario`, `compartir`.
+Pendientes, según se construyan: `empleado`, `panel`, `horario`, `compartir`.
 
 ## Diseño
 
@@ -75,6 +76,7 @@ Nunca se borra un ADR: se marca *Reemplazado por NNNN*. Plantilla:
 | [0012](adr/0012-vulnerabilidades-de-desarrollo.md) | Vitest en `~4.0`; auditoría acotada a producción | Aceptado |
 | [0013](adr/0013-apellido-con-particula.md) | Un grupo que empieza por partícula es siempre apellido | **Propuesto** |
 | [0014](adr/0014-demo-local-antes-de-fase-2.md) | Demo local de la vista de empleado, antes de la Fase 2 | **Propuesto** |
+| [0015](adr/0015-enrutador.md) | Enrutador: React Router | Aceptado |
 
 ## Operación (runbooks)
 

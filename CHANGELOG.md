@@ -37,6 +37,25 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   pedida fuera del plan para validar el dominio antes de la Fase 2 (ADR-0014 **Propuesto**, ficha:
   docs/features/demo.md).
 
+- Esquema de base de datos completo (`supabase/migrations/20261104172348_esquema_inicial.sql`): las
+  8 tablas del modelo, RLS en todas, y las funciones `is_admin`, `publish_import`, `activate_import`.
+  Verificado contra un stack local de Supabase, no solo leído: 21 pruebas (`tests/db/`,
+  `npm run test:db`) más una prueba manual completa en el navegador con el fixture anonimizado.
+- Acceso de jefatura con Google: `src/data/auth.ts`, `app/useSesion.ts`, `app/RutaJefatura.tsx` (el
+  guardián de sesión y el layout con menú lateral). ADR-0006 verificado en código: con sesión pero
+  sin acceso se muestra «No tienes acceso de jefatura», tanto en la interfaz como a nivel de base de
+  datos (RLS).
+- Pantalla **Fuente de datos** (`src/features/fuente/Fuente.tsx`): subir el Excel, resumen de lectura
+  por mes con diff contra el mes anterior, publicar, historial de versiones y «Volver a esta
+  versión» (ficha: docs/features/fuente.md).
+- `api/hoja.ts`: exporta el `.xlsx` de una Google Sheet, siguiendo ADR-0005 (**Propuesto**; escrito
+  pero sin probar contra una hoja real).
+- `src/data/imports.ts` y `src/data/content-hash.ts`: arman el payload de `publish_import` a partir
+  de lo que lee `domain/workbook.ts`, y el hash de contenido que evita publicar el mismo archivo dos
+  veces.
+- Enrutador de la aplicación con React Router (ADR-0015, **Aceptado**): `/jefe/fuente`, `/demo`, y el
+  punto de entrada `/s/:slug` para los enlaces de empleado de la Fase 3.
+
 ### Corregido
 
 - Un apellido con partícula (`CRUZ DE LEON MARTA`) rompía la regla de reparto nombre/apellido del
