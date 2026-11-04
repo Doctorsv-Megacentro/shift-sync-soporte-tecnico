@@ -43,6 +43,7 @@ Una ficha por carpeta de `src/features/`. `docs:check` falla si falta alguna.
 | Funcionalidad | Ficha |
 |---|---|
 | Carga del horario (Excel y Google Sheet) | [features/carga-horario.md](features/carga-horario.md) |
+| Demo local de la vista de empleado (desechable, ADR-0014) | [features/demo.md](features/demo.md) |
 
 Pendientes, según se construyan: `empleado`, `fuente`, `panel`, `horario`, `compartir`.
 
@@ -72,6 +73,8 @@ Nunca se borra un ADR: se marca *Reemplazado por NNNN*. Plantilla:
 | [0010](adr/0010-versiones-de-importacion.md) | Versiones de importación, con vuelta atrás | Aceptado |
 | [0011](adr/0011-datos-personales-fuera-del-repo.md) | Datos personales fuera del repo | Aceptado |
 | [0012](adr/0012-vulnerabilidades-de-desarrollo.md) | Vitest en `~4.0`; auditoría acotada a producción | Aceptado |
+| [0013](adr/0013-apellido-con-particula.md) | Un grupo que empieza por partícula es siempre apellido | **Propuesto** |
+| [0014](adr/0014-demo-local-antes-de-fase-2.md) | Demo local de la vista de empleado, antes de la Fase 2 | **Propuesto** |
 
 ## Operación (runbooks)
 

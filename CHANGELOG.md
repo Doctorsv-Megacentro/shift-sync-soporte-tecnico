@@ -24,6 +24,23 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
 - Doce ADR con las decisiones de arquitectura (ADR-0001 a ADR-0012). ADR-0005 queda **Propuesto**:
   depende de si la Google Sheet puede compartirse por enlace.
 - Tokens del sistema de diseño como variables CSS en `src/ui/tokens.css` (plan §8).
+- Dominio completo de lectura de la hoja (`src/domain/`: `types`, `config`, `text`, `time`, `shift`,
+  `names`, `catalog`, `workbook`, `validate`, `diff`, `presence`) y `src/data/excel.ts` como único
+  punto que conoce SheetJS. 189 pruebas (177 con fixtures sintéticos, 12 contra el Excel real de la
+  operación) y 99.57 % de cobertura de líneas (ficha: docs/features/carga-horario.md, plan Fase 1).
+- `scripts/anonimizar-excel.ts` y `tests/fixtures/horario-anon.xlsx`: el fixture con el que se prueba
+  sin usar nombres reales (ADR-0011).
+- `tests/local/hoja-real.test.ts` (`npm run test:local`): verifica los criterios de aceptación del
+  plan §6.5 contra el Excel real; se salta sola si no existe `referencias/privado/`.
+- Demo local de la vista de empleado (`src/features/demo/`): sube un `.xlsx`, busca una persona y
+  muestra su semana, su día y quién más trabaja ese día, sin Supabase ni login. Pantalla desechable,
+  pedida fuera del plan para validar el dominio antes de la Fase 2 (ADR-0014 **Propuesto**, ficha:
+  docs/features/demo.md).
+
+### Corregido
+
+- Un apellido con partícula (`CRUZ DE LEON MARTA`) rompía la regla de reparto nombre/apellido del
+  plan §5.5 y producía «De Leon Marta Cruz» en vez de «Marta Cruz de Leon» (ADR-0013 **Propuesto**).
 
 ### Seguridad
 
