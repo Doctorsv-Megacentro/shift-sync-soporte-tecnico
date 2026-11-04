@@ -2,8 +2,10 @@
 
 Tablas, RLS y funciones RPC. Fuente: plan §5.6.
 
-> **Estado: diseñado, no implementado.** Las migraciones se escriben en la **Fase 2**. Este archivo
-> se actualiza en el mismo PR que cada migración (Definición de terminado).
+> **Estado: implementado.** `supabase/migrations/20261104172348_esquema_inicial.sql` crea todas las
+> tablas, el RLS y `is_admin`, `publish_import`, `activate_import`. `get_shared_view` llega con la
+> Fase 3, cuando exista algo que compartir. Verificado con `tests/db/` (21 casos) y a mano en el
+> navegador contra el Excel real anonimizado — ver docs/features/fuente.md.
 
 ## Diagrama
 
@@ -116,6 +118,13 @@ Funciones RPC, todas `security definer` y con `search_path` fijo:
 
 ## Cómo verificarlo
 
-`tests/db/` comprueba que `anon` no lee ninguna tabla directamente, que un usuario no admin no puede
-llamar `publish_import`, y que `get_shared_view` respeta alcance y vencimiento. Ver
-[../operacion/migraciones.md](../operacion/migraciones.md).
+```
+npx supabase start   # stack local, puertos 55320-55329 (ver supabase/config.toml)
+npm run test:db       # 21 casos: RLS, is_admin, publish_import, activate_import
+```
+
+`tests/db/rls.test.ts` comprueba que `anon` no lee ni escribe ninguna tabla y que un usuario no admin
+no puede llamar `publish_import`. `tests/db/publish_import.test.ts` comprueba el *upsert* de
+personas, que `content_hash` evita publicar dos veces lo mismo, que `display_name` manual no se
+pisa, y que `activate_import` cambia la versión activa y rechaza un mes que no cubre. `get_shared_view`
+se prueba cuando se implemente, en la Fase 3. Ver [../operacion/migraciones.md](../operacion/migraciones.md).
