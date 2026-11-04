@@ -2,8 +2,10 @@
 
 Quién ve qué, y qué riesgos aceptamos a sabiendas. Fuente: plan §5.6, §6.3, §7.6, §12.
 
-> **Estado: diseñado.** El acceso de jefatura y `/api/hoja` llegan en la **Fase 2**; los enlaces
-> completos en la **Fase 7**. Este archivo se actualiza con cada cambio que afecte al acceso.
+> **Estado: el acceso de jefatura está implementado y verificado** (RLS, `is_admin()`, el guardián
+> de sesión de `app/RutaJefatura.tsx`). `/api/hoja` está escrito pero depende de ADR-0005
+> (**Propuesto**) y no se ha probado contra una Google Sheet real. Los enlaces públicos llegan en la
+> Fase 3 (alcance mínimo) y se completan en la Fase 7.
 
 ## Quién ve qué
 
