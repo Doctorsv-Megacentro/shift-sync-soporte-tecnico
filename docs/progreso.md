@@ -8,14 +8,57 @@ Estado del MVP de ShiftSync v2. Se actualiza en **cada** cambio (Definición de 
 | 1 | Dominio: leer la hoja | **Hecho** | Opus. 189 pruebas, verificado contra el Excel real |
 | — | Demo local (adelanto de la Fase 3, fuera del plan) | **Hecho** | Probada en navegador. ADR-0013/0014 Propuestos |
 | 2 | Base de datos, acceso de jefatura y Fuente de datos | **Hecho** | Opus. Esquema + RLS + RPC probados contra Supabase local; falta proyecto en la nube |
-| 3 | Vista empleado + enlace de la operación | **Siguiente** | Sonnet. **Primer entregable usable** |
-| 4 | Horario completo | Sin empezar | Sonnet |
+| 3 | Vista empleado + enlace de la operación | **Hecho** | Sonnet. **Primer entregable usable** |
+| 4 | Horario completo | **Siguiente** | Sonnet |
 | 5 | Cambiar un día + registro de cambios | Sin empezar | Sonnet |
 | 6 | Panel y conflictos | Sin empezar | Opus |
 | 7 | Compartir completo | Sin empezar | Sonnet |
 | 8 | Producción | Sin empezar | Opus, en sesión nueva (revisión independiente) |
 
 ## Último cambio
+
+**4 nov 2026 · Fase 3 cerrada: vista de empleado + enlace de la operación.**
+
+`get_shared_view` (`supabase/migrations/20261104180132_get_shared_view.sql`) es la única función que
+`anon` puede llamar: valida el slug (inexistente, vencido y revocado dan el mismo mensaje, a
+propósito), y devuelve `scope`, `title`, `source`, `months[]` y `overrides[]` — nunca quién hizo un
+cambio (plan §5.6). Encima, `domain/overlay.ts` (el horario efectivo: hoja + cambios de jefatura,
+ADR-0003) y `domain/share.ts` (slug con `crypto.getRandomValues`, vencimiento, vigencia) — 20
+pruebas nuevas en `tests/domain/`. `src/data/sharedView.ts` reconstruye el jsonb a `ParsedMonth[]` /
+`DayOverride[]` con `resolveDepartment()` del catálogo, nunca con datos de rol/sede de la base.
+
+La pantalla real en `/s/:slug` (`src/features/empleado/`) reutiliza `domain/presence.ts` tal cual de
+la Fase 1: buscador, semana, tarjeta del día (con la caja de «Cambio hecho por jefatura» si
+corresponde) y «quién está ese día» en sus tres alcances. En Fuente de datos,
+`EnlaceOperacion.tsx` agrega crear/copiar/revocar el enlace.
+
+**Un bug real, no solo cosmético, se encontró probando con el fixture real en el navegador** (ver
+ficha, docs/features/empleado.md, «Bug real encontrado»): un import que cubre dos meses calendario a
+la vez (así viene la hoja real: octubre y noviembre en el mismo archivo) hacía que `get_shared_view`
+devolviera **todas** las entradas del import duplicadas en los dos meses, en vez de solo las de cada
+uno — `get_shared_view` filtraba `entries`/`people`/`dates` por `import_id` pero no por fecha dentro
+del mes. Síntoma en pantalla: «Toda la operación» del 5 de noviembre mostraba 166 personas en vez de
+~103, y una persona mostraba un departamento distinto en la cabecera y en la tarjeta del día.
+Confirmado primero con `psql` directo (la base estaba limpia; el jsonb crudo de la función traía el
+import completo repetido en cada mes), corregido filtrando también por `se.date` dentro del rango del
+mes de cada `month_versions`, con un caso de regresión nuevo en `tests/db/get_shared_view.test.ts` (un
+import con dos meses, entradas distintas en cada uno) y reverificado en el navegador: el conteo bajó
+de 166 a 83 (justo la mitad) y el departamento ya es consistente.
+
+**32 pruebas de base de datos** en verde (`npm run test:db`): las 21 de la Fase 2 más las 11 nuevas de
+`get_shared_view` (slugs inválidos, un enlace vigente, cambios de jefatura sin exponer quién los
+hizo, un usuario con sesión pudiendo abrir su propio enlace, y la regresión del bug de arriba).
+
+**Probado de punta a punta en el navegador**, con sesión de admin inyectada y el fixture anonimizado
+real: publicar octubre+noviembre desde un solo archivo, crear el enlace desde Fuente, abrirlo en otra
+pestaña, buscar una persona, navegar semanas que cruzan el límite de mes, los tres alcances de «quién
+está», «Volver a mi horario», y un enlace recién revocado mostrando «Este enlace ya no está activo»
+al recargar. Sin errores ni warnings en consola. Queda pendiente la comparación pixel a pixel en
+390 px contra la captura `05-empleado-movil.png` (no se pudo redimensionar la ventana del navegador
+de esta sesión); el CSS ya sigue la regla del plan §7.8-3.
+
+El stack local de Supabase y el servidor de desarrollo se apagaron al terminar; nada quedó corriendo
+en segundo plano.
 
 **2 nov 2026 · Fase 1 cerrada: el dominio lee la hoja completa.**
 
@@ -122,16 +165,21 @@ El stack local de Supabase y el servidor de desarrollo se apagaron al terminar
 
 ## Siguiente paso
 
-**Fase 3 — Vista empleado + enlace de la operación** (3 días, Sonnet). Construye `get_shared_view` y
-`domain/share.ts` (alcance «Toda la operación», vencimiento «Fin de mes»), `domain/overlay.ts`
-(hoja + cambios de jefatura — hoy no hay cambios de jefatura que mezclar, así que puede ser simple al
-inicio), y la pantalla de empleado real, pixel-perfect a las capturas 01–04 y con móvil 390 px sin
-scroll horizontal. Reutiliza `domain/presence.ts` tal cual: ya tiene buscador, semana, «quién está
-ese día» y sus 29 pruebas, construidos para la demo.
+**Fase 4 — Horario completo** (Sonnet). La pantalla de jefatura con la grilla semanal/diaria de toda
+la operación (`GridOps.dc.html`, capturas 10, 17, 18), scroll horizontal con el nombre fijo en móvil,
+y la vista rápida de una persona desde la grilla.
 
-Cuando la vista real exista, `src/features/demo/` se retira (ADR-0014).
+Pendiente de esta sesión, para retomar antes o durante la Fase 4:
 
-Antes de arrancarla, conviene cerrar el visto bueno de Ado a los ADR-0013 y 0014 (ambos en
+- **`src/features/demo/` sigue sin retirarse.** ADR-0014 dice que se retira cuando la vista real de
+  empleado exista — ya existe (Fase 3) — pero no se tocó esta sesión por no ser parte del trabajo
+  pedido; sigue montada en `/demo` y documentada en `docs/features/demo.md`.
+- **390 px de `/s/:slug` sin verificar pixel a pixel** contra `05-empleado-movil.png` (ver ficha,
+  docs/features/empleado.md, «Pendiente»).
+- Marcar en `docs/diseno/pantallas.md` las capturas 01, 03 y 04 como revisadas cuando se haga esa
+  comparación visual (hoy la Fase 3 está probada funcionalmente, no pixel-perfect).
+
+Antes de la Fase 4, conviene cerrar el visto bueno de Ado a los ADR-0013 y 0014 (ambos en
 **Propuesto**; ninguno bloquea técnicamente, pero son desviaciones del plan que piden su ratificación).
 
 ### Hallazgos sobre la hoja real que quedan para después

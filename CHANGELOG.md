@@ -55,11 +55,29 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   veces.
 - Enrutador de la aplicación con React Router (ADR-0015, **Aceptado**): `/jefe/fuente`, `/demo`, y el
   punto de entrada `/s/:slug` para los enlaces de empleado de la Fase 3.
+- `get_shared_view` (`supabase/migrations/20261104180132_get_shared_view.sql`): la única función que
+  `anon` puede llamar, con el horario de toda la operación y los cambios de jefatura vigentes, sin
+  exponer quién los hizo (plan §5.6).
+- `domain/overlay.ts` (el horario efectivo: hoja + cambios de jefatura, ADR-0003) y `domain/share.ts`
+  (slug aleatorio, vencimiento, vigencia de un enlace), con 20 pruebas nuevas.
+- `src/data/sharedView.ts` y `src/data/shareLinks.ts`: llaman `get_shared_view` y reconstruyen sus
+  tipos de dominio; crean, consultan y revocan el enlace de «toda la operación».
+- Pantalla real de empleado en `/s/:slug` (`src/features/empleado/`): buscar persona, semana, tarjeta
+  del día con el cambio de jefatura si lo hay, y «quién está ese día» en sus tres alcances. **Primer
+  entregable usable del MVP** (ficha: docs/features/empleado.md).
+- Botón de crear/copiar/revocar el enlace de la operación en Fuente de datos
+  (`src/features/fuente/EnlaceOperacion.tsx`).
 
 ### Corregido
 
 - Un apellido con partícula (`CRUZ DE LEON MARTA`) rompía la regla de reparto nombre/apellido del
   plan §5.5 y producía «De Leon Marta Cruz» en vez de «Marta Cruz de Leon» (ADR-0013 **Propuesto**).
+- `get_shared_view` devolvía las entradas de un import duplicadas en cada mes que cubre, cuando un
+  solo import abarca más de un mes calendario (el caso real: octubre y noviembre en el mismo
+  archivo). Encontrado probando en el navegador con el fixture real: «Toda la operación» mostraba el
+  doble de personas de las que trabajaban ese día, y una persona mostraba un departamento distinto en
+  la cabecera y en la tarjeta del día. Corregido filtrando también por fecha dentro del mes de cada
+  versión; regresión cubierta en `tests/db/get_shared_view.test.ts`.
 
 ### Seguridad
 

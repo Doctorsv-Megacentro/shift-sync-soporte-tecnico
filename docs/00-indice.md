@@ -44,9 +44,10 @@ Una ficha por carpeta de `src/features/`. `docs:check` falla si falta alguna.
 |---|---|
 | Carga del horario (Excel y Google Sheet) | [features/carga-horario.md](features/carga-horario.md) |
 | Fuente de datos (subir, publicar, historial, acceso de jefatura) | [features/fuente.md](features/fuente.md) |
+| Vista de empleado (`/s/:slug`, sin cuenta, primer entregable usable) | [features/empleado.md](features/empleado.md) |
 | Demo local de la vista de empleado (desechable, ADR-0014) | [features/demo.md](features/demo.md) |
 
-Pendientes, según se construyan: `empleado`, `panel`, `horario`, `compartir`.
+Pendientes, según se construyan: `panel`, `horario`, `compartir`.
 
 ## Diseño
 
