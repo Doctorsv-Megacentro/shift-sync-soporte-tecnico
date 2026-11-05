@@ -8,6 +8,7 @@ import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom';
 import { Demo } from '@/features/demo/Demo.tsx';
 import { Empleado } from '@/features/empleado/Empleado.tsx';
 import { Fuente } from '@/features/fuente/Fuente.tsx';
+import { Horario } from '@/features/horario/Horario.tsx';
 import { RutaJefatura } from './RutaJefatura.tsx';
 
 function NoEncontrado() {
@@ -28,6 +29,7 @@ export function App() {
         <Route path="/jefe" element={<RutaJefatura />}>
           <Route index element={<Navigate to="fuente" replace />} />
           <Route path="fuente" element={<Fuente />} />
+          <Route path="horario" element={<Horario />} />
         </Route>
         <Route path="*" element={<NoEncontrado />} />
       </Routes>

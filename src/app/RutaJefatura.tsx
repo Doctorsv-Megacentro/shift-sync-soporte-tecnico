@@ -12,7 +12,7 @@ import { useSesion } from './useSesion.ts';
 const ITEMS_MENU = [
   { href: '/jefe/fuente', etiqueta: 'Fuente de datos', listo: true },
   { href: '/jefe/panel', etiqueta: 'Panel y conflictos', listo: false },
-  { href: '/jefe/horario', etiqueta: 'Horario completo', listo: false },
+  { href: '/jefe/horario', etiqueta: 'Horario completo', listo: true },
   { href: '/jefe/compartir', etiqueta: 'Compartir', listo: false },
 ] as const;
 

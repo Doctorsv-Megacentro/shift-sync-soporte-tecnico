@@ -1,0 +1,215 @@
+/**
+ * Grid, columna de nombre fija (sticky) y línea de tiempo 00–24 del horario
+ * completo: no se pueden hacer bien con estilos en línea. Plan §7.4,
+ * diferencia aceptada §7.8-3 («en jefatura, la tabla semanal mantiene scroll
+ * horizontal con el nombre fijo»).
+ */
+
+.ss-horario-scroll {
+  overflow-x: auto;
+}
+
+.ss-horario-tabla {
+  min-width: 1100px;
+}
+
+.ss-fila-horario {
+  display: grid;
+  grid-template-columns: 240px repeat(7, minmax(90px, 1fr)) 90px;
+  align-items: stretch;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde-suave-2);
+}
+
+.ss-fila-horario.cabecera {
+  border-bottom: 1px solid var(--borde);
+}
+
+.ss-fila-horario.alterna {
+  background: var(--fondo);
+}
+
+.ss-nombre-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 30px;
+  border-right: 1px solid var(--borde-suave);
+  min-width: 0;
+}
+
+.ss-celda-dia {
+  padding: 4px 3px;
+  display: flex;
+}
+
+.ss-celda-dia.hoy {
+  background: rgba(15, 111, 116, 0.07);
+}
+
+.ss-celda-turno {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tactil-min);
+  border-radius: 8px;
+  font-family: var(--fuente-mono);
+  line-height: 1.2;
+  position: relative;
+}
+
+.ss-celda-turno .a {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ss-celda-turno .b {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.ss-celda-turno .s {
+  font-family: var(--fuente-texto);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cambio-jefatura);
+}
+
+.ss-celda-turno.vacia {
+  background: transparent;
+  color: var(--apagado);
+  font-family: var(--fuente-texto);
+  font-size: 11px;
+}
+
+.ss-celda-turno.cambiada {
+  outline: 2px dashed var(--cambio-jefatura);
+  outline-offset: -2px;
+}
+
+.ss-celda-turno.cambiada::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cambio-jefatura);
+}
+
+.ss-grupo-cabecera {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 6px 12px;
+  margin-top: 10px;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-control);
+  background: var(--fondo);
+  font: inherit;
+  color: var(--texto);
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.ss-grupo-cabecera:hover {
+  border-color: var(--primario);
+}
+
+.ss-grupo-chevron {
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.ss-grupo-chevron.cerrado {
+  transform: rotate(-90deg);
+}
+
+.ss-dia-chip {
+  font: inherit;
+  min-height: var(--tactil-min);
+  padding: 0 12px;
+  border-radius: var(--radio-control);
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto-2);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+}
+
+.ss-dia-chip[aria-pressed='true'] {
+  background: var(--primario);
+  border-color: var(--primario);
+  color: #fff;
+}
+
+.ss-fila-dia {
+  display: grid;
+  grid-template-columns: 240px minmax(320px, 1fr) 140px;
+  align-items: center;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde-suave-2);
+  min-height: var(--tactil-min);
+}
+
+.ss-fila-dia.alterna {
+  background: var(--fondo);
+}
+
+.ss-track {
+  position: relative;
+  height: 24px;
+  margin: 0 12px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--borde-suave-2) 0,
+    var(--borde-suave-2) calc(25% - 1px),
+    var(--borde-suave) calc(25% - 1px),
+    var(--borde-suave) 25%
+  );
+}
+
+.ss-barra {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 5px;
+}
+
+.ss-barra.previa {
+  opacity: 0.55;
+  border: 1px dashed currentColor;
+  box-sizing: border-box;
+}
+
+.ss-skeleton-horario {
+  background: linear-gradient(90deg, var(--borde-suave) 25%, var(--borde-suave-2) 37%, var(--borde-suave) 63%);
+  background-size: 400% 100%;
+  animation: ss-skeleton-horario 1.4s ease infinite;
+  border-radius: var(--radio-control);
+}
+
+@keyframes ss-skeleton-horario {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
