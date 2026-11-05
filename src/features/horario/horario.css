@@ -160,7 +160,7 @@
 
 .ss-fila-dia {
   display: grid;
-  grid-template-columns: 240px minmax(320px, 1fr) 140px;
+  grid-template-columns: 240px minmax(320px, 1fr) 140px 70px;
   align-items: center;
   background: var(--superficie);
   border-bottom: 1px solid var(--borde-suave-2);

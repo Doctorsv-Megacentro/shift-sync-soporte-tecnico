@@ -1,8 +1,9 @@
 /**
  * El horario completo de jefatura: filtros, vista Semana (grupos por
- * departamento, grid con nombre fijo) y vista Día (línea de tiempo 00–24).
- * Plan §7.4. Tocar una celda, «Cambios» y «Compartir» quedan deshabilitados
- * hasta las Fases 5 y 7 (ADR-0016). Ficha: docs/features/horario.md.
+ * departamento, grid con nombre fijo), vista Día (línea de tiempo 00–24), el
+ * panel «Cambiar un día» y el registro de cambios. Plan §7.4 y §7.5. Solo
+ * «Compartir» (los alcances que no son «toda la operación») queda
+ * deshabilitado hasta la Fase 7. Ficha: docs/features/horario.md.
  */
 
 import { useMemo, useState } from 'react';
@@ -32,6 +33,8 @@ import {
 import type { DateKey, Role, SheetPerson, ShiftValue } from '@/domain/types.ts';
 import { COLOR_CATEGORIA, COLOR_ROL } from '@/ui/colorRol.ts';
 import './horario.css';
+import { PanelEdicion } from './PanelEdicion.tsx';
+import { RegistroCambios } from './RegistroCambios.tsx';
 
 type Modo = 'semana' | 'dia';
 
@@ -47,8 +50,9 @@ function textoTurno(shift: ShiftValue | undefined): { a: string; b: string } {
   return { a: formatMinutes(shift.startMin), b: `→ ${formatMinutes(shift.endMin % 1440)}${endsNextDay(shift) ? ' +1' : ''}` };
 }
 
-export function VistaHorario({ horario }: { horario: HorarioCompleto }) {
+export function VistaHorario({ horario, onCambio }: { horario: HorarioCompleto; onCambio: () => Promise<void> }) {
   const mesCombinado = useMemo(() => combinarMeses(horario.months), [horario.months]);
+  const indiceOriginal = useMemo(() => indexarMes(mesCombinado), [mesCombinado]);
   const indiceOverrides = useMemo(() => indexarOverrides(horario.overrides), [horario.overrides]);
   const entradasEfectivas = useMemo(
     () => aplicarCambios(mesCombinado.entries, horario.overrides),
@@ -65,6 +69,20 @@ export function VistaHorario({ horario }: { horario: HorarioCompleto }) {
   const [filtros, setFiltros] = useState<FiltrosHorario>({ texto: '', site: 'Todas', role: 'Todos' });
   const [cerrados, setCerrados] = useState<ReadonlySet<string>>(new Set());
   const [personaVista, setPersonaVista] = useState<string | null>(null);
+  const [edicion, setEdicion] = useState<{ personaKey: string; date: DateKey } | null>(null);
+  const [registroAbierto, setRegistroAbierto] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
+
+  function abrirEdicion(personaKey: string, date: DateKey) {
+    setPersonaVista(null);
+    setEdicion({ personaKey, date });
+  }
+
+  async function alGuardar(mensaje: string) {
+    setEdicion(null);
+    setFlash(mensaje);
+    await onCambio();
+  }
 
   const personasFiltradas = useMemo(() => filtrarPersonas(mesCombinado.people, filtros), [mesCombinado.people, filtros]);
   const grupos = useMemo(() => agruparPorDepartamento(personasFiltradas), [personasFiltradas]);
@@ -98,11 +116,11 @@ export function VistaHorario({ horario }: { horario: HorarioCompleto }) {
             Horario completo
           </h1>
           <p style={{ margin: '4px 0 0', color: 'var(--texto-3)', fontSize: 14 }}>
-            Toca un nombre para ver su horario. Cambiar un día llega en la próxima fase.
+            Toca una celda para cambiar ese día · toca un nombre para ver su horario.
           </p>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          <button type="button" disabled title="Próximamente" style={estiloBotonDeshabilitado}>
+          <button type="button" onClick={() => setRegistroAbierto(true)} style={estiloBotonSecundario}>
             Cambios · {horario.overrides.length}
           </button>
           <button type="button" disabled title="Próximamente" style={estiloBotonDeshabilitado}>
@@ -110,6 +128,15 @@ export function VistaHorario({ horario }: { horario: HorarioCompleto }) {
           </button>
         </div>
       </header>
+
+      {flash !== null && (
+        <div role="status" style={estiloFlash}>
+          <span style={{ flex: '1 1 300px' }}>{flash}</span>
+          <button type="button" onClick={() => setFlash(null)} style={estiloBotonEnlaceFlash}>
+            Cerrar
+          </button>
+        </div>
+      )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <div role="group" aria-label="Tipo de vista" style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 999, background: 'var(--borde-suave)' }}>
@@ -256,6 +283,7 @@ export function VistaHorario({ horario }: { horario: HorarioCompleto }) {
               cerrados={cerrados}
               onToggle={alternarGrupo}
               onAbrirPersona={setPersonaVista}
+              onEditar={abrirEdicion}
             />
           ) : (
             <VistaDia
@@ -265,6 +293,7 @@ export function VistaHorario({ horario }: { horario: HorarioCompleto }) {
               cerrados={cerrados}
               onToggle={alternarGrupo}
               onAbrirPersona={setPersonaVista}
+              onEditar={abrirEdicion}
             />
           )}
         </div>
@@ -282,6 +311,42 @@ export function VistaHorario({ horario }: { horario: HorarioCompleto }) {
           semana={semana}
           diaReferencia={semana.includes(diaSeleccionado) ? diaSeleccionado : (semana[0] ?? diaSeleccionado)}
           onCerrar={() => setPersonaVista(null)}
+          onEditar={abrirEdicion}
+        />
+      )}
+
+      {edicion !== null &&
+        (() => {
+          const persona = indice.personas.get(edicion.personaKey);
+          if (persona === undefined) return null;
+          const valorOriginal = diaDe(indiceOriginal, edicion.personaKey, edicion.date)?.shift ?? { kind: 'unknown' as const, raw: '' };
+          const valorEfectivo = diaDe(indice, edicion.personaKey, edicion.date)?.shift ?? valorOriginal;
+          const overrideVigente = buscarOverride(indiceOverrides, edicion.personaKey, edicion.date);
+          const mesDelDia = horario.months.find((m) => m.month.slice(0, 7) === edicion.date.slice(0, 7));
+          return (
+            <PanelEdicion
+              persona={persona}
+              personaKey={edicion.personaKey}
+              date={edicion.date}
+              valorOriginal={valorOriginal}
+              valorEfectivo={valorEfectivo}
+              overrideVigente={overrideVigente}
+              indice={indice}
+              indiceOverrides={indiceOverrides}
+              entriesDelMes={mesDelDia?.entries ?? mesCombinado.entries}
+              onGuardado={(mensaje) => void alGuardar(mensaje)}
+              onCerrar={() => setEdicion(null)}
+            />
+          );
+        })()}
+
+      {registroAbierto && (
+        <RegistroCambios
+          overrides={horario.overrides}
+          indice={indice}
+          indiceOriginal={indiceOriginal}
+          onDeshecho={() => void onCambio()}
+          onCerrar={() => setRegistroAbierto(false)}
         />
       )}
     </div>
@@ -358,6 +423,7 @@ function VistaSemana({
   cerrados,
   onToggle,
   onAbrirPersona,
+  onEditar,
 }: {
   grupos: readonly ReturnType<typeof agruparPorDepartamento>[number][];
   indice: IndiceMes;
@@ -367,6 +433,7 @@ function VistaSemana({
   cerrados: ReadonlySet<string>;
   onToggle: (department: string) => void;
   onAbrirPersona: (key: string) => void;
+  onEditar: (personaKey: string, date: DateKey) => void;
 }) {
   return (
     <div className="ss-horario-tabla">
@@ -420,14 +487,24 @@ function VistaSemana({
                       const override = buscarOverride(indiceOverrides, p.key, fecha);
                       return (
                         <span key={fecha} className={`ss-celda-dia${fecha === hoy ? ' hoy' : ''}`}>
-                          <span
+                          <button
+                            type="button"
+                            disabled={entry === null}
+                            onClick={() => onEditar(p.key, fecha)}
+                            aria-label={`Cambiar ${p.displayName}, ${formatFechaCorta(fecha)}`}
                             className={`ss-celda-turno${entry === null ? ' vacia' : ''}${cambiada ? ' cambiada' : ''}`}
-                            style={colores !== undefined ? { background: colores.fondo, color: colores.texto } : undefined}
+                            style={{
+                              border: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              cursor: entry === null ? 'default' : 'pointer',
+                              ...(colores !== undefined ? { background: colores.fondo, color: colores.texto } : undefined),
+                            }}
                           >
                             <span className="a">{t.a}</span>
                             {t.b !== '' && <span className="b">{t.b}</span>}
                             {override?.site !== null && override?.site !== undefined && <span className="s">{override.site}</span>}
-                          </span>
+                          </button>
                         </span>
                       );
                     })}
@@ -454,6 +531,7 @@ function VistaDia({
   cerrados,
   onToggle,
   onAbrirPersona,
+  onEditar,
 }: {
   grupos: readonly ReturnType<typeof agruparPorDepartamento>[number][];
   indice: IndiceMes;
@@ -461,6 +539,7 @@ function VistaDia({
   cerrados: ReadonlySet<string>;
   onToggle: (department: string) => void;
   onAbrirPersona: (key: string) => void;
+  onEditar: (personaKey: string, date: DateKey) => void;
 }) {
   const ayer = addDays(dia, -1);
 
@@ -480,6 +559,7 @@ function VistaDia({
         <span style={{ fontSize: 11, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--texto-3)', fontWeight: 600, textAlign: 'right', paddingRight: 10 }}>
           Horario
         </span>
+        <span />
       </div>
 
       {grupos.map((g) => {
@@ -553,6 +633,11 @@ function VistaDia({
                         )}
                       </span>
                       <span style={{ fontFamily: 'var(--fuente-mono)', fontSize: 13, fontWeight: 500, textAlign: 'right', paddingRight: 10 }}>{texto}</span>
+                      <span style={{ textAlign: 'right', paddingRight: 8 }}>
+                        <button type="button" onClick={() => onEditar(x.persona.key, dia)} style={estiloBotonEnlace}>
+                          Editar
+                        </button>
+                      </span>
                     </div>
                   );
                 })}
@@ -576,12 +661,14 @@ function VistaRapida({
   semana,
   diaReferencia,
   onCerrar,
+  onEditar,
 }: {
   persona: SheetPerson;
   indice: IndiceMes;
   semana: readonly DateKey[];
   diaReferencia: DateKey;
   onCerrar: () => void;
+  onEditar: (personaKey: string, date: DateKey) => void;
 }) {
   const resumen = resumirSemana(indice, persona.key, semana);
   return (
@@ -653,7 +740,7 @@ function VistaRapida({
           {resumen.turnos === 1 ? 'turno' : 'turnos'} · {formatDuration(resumen.minutos)}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          <button type="button" disabled title="Próximamente" style={estiloBotonDeshabilitado}>
+          <button type="button" onClick={() => onEditar(persona.key, diaReferencia)} style={estiloBotonSecundario}>
             Editar {nombreDia(diaReferencia)} {diaReferencia.slice(-2)}
           </button>
           <button type="button" disabled title="Próximamente" style={estiloBotonDeshabilitadoSecundario}>
@@ -800,6 +887,45 @@ const estiloBotonNombre: CSSProperties = {
   textAlign: 'left',
   cursor: 'pointer',
   minHeight: 36,
+};
+
+const estiloBotonEnlace: CSSProperties = {
+  font: 'inherit',
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--primario)',
+  background: 'transparent',
+  border: 'none',
+  padding: '0 6px',
+  minHeight: 36,
+  cursor: 'pointer',
+  textDecoration: 'underline',
+};
+
+const estiloFlash: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 12,
+  padding: '10px 14px',
+  borderRadius: 'var(--radio-tarjeta)',
+  background: 'var(--exito-fondo)',
+  color: 'var(--exito-texto)',
+  fontSize: 14,
+  marginBottom: 16,
+};
+
+const estiloBotonEnlaceFlash: CSSProperties = {
+  font: 'inherit',
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'inherit',
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  minHeight: 36,
+  cursor: 'pointer',
+  textDecoration: 'underline',
 };
 
 const estiloFondoDialogo: CSSProperties = {

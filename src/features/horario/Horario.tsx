@@ -39,9 +39,17 @@ export function Horario() {
     };
   }, []);
 
+  // Tras guardar o deshacer un cambio: vuelve a pedir el horario sin pasar
+  // por el esqueleto, para no perder filtros ni grupos plegados a medio
+  // uso.
+  async function recargar() {
+    const horario = await obtenerHorarioCompleto();
+    setEstado({ tipo: 'ok', horario });
+  }
+
   if (estado.tipo === 'cargando') return <Esqueleto />;
   if (estado.tipo === 'error') {
     return <p style={{ color: 'var(--texto-2)' }}>No se pudo cargar el horario. Vuelve a intentarlo.</p>;
   }
-  return <VistaHorario horario={estado.horario} />;
+  return <VistaHorario horario={estado.horario} onCambio={recargar} />;
 }
