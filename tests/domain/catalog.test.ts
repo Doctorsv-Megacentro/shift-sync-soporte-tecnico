@@ -33,19 +33,13 @@ describe('coincidencia exacta', () => {
     });
   });
 
-  it('algunos departamentos transversales quedan sin sede, y eso no es un error', () => {
+  it('coordinador de operaciones queda sin sede, y eso no es un error', () => {
     expect(resolveDepartment('Coordinador Operaciones')).toMatchObject({
       role: 'Coordinador', site: 'Sin sede',
     });
-    expect(resolveDepartment('Especialistas de Producto')).toMatchObject({
-      role: 'Producto', site: 'Sin sede',
-    });
-    expect(resolveDepartment('Auxiliares de Red y Soporte')).toMatchObject({
-      role: 'Redes', site: 'Sin sede',
-    });
   });
 
-  it('QA, tercerías, redes y atención de salas están en Megacentro', () => {
+  it('QA, tercerías, redes, producto y atención de salas están en Megacentro', () => {
     expect(resolveDepartment('QA')).toMatchObject({ role: 'QA', site: 'Megacentro', match: 'exact' });
     expect(resolveDepartment('Tercerias')).toMatchObject({ role: 'Tercería', site: 'Megacentro' });
     expect(resolveDepartment('Supervisor Tercerias')).toMatchObject({
@@ -57,11 +51,23 @@ describe('coincidencia exacta', () => {
     expect(resolveDepartment('Administrador de Redes')).toMatchObject({
       role: 'Redes', site: 'Megacentro',
     });
+    expect(resolveDepartment('Auxiliares de Red y Soporte')).toMatchObject({
+      role: 'Redes', site: 'Megacentro',
+    });
+    expect(resolveDepartment('Especialistas de Producto')).toMatchObject({
+      role: 'Producto', site: 'Megacentro',
+    });
     expect(resolveDepartment('Atencion Gestion Salas')).toMatchObject({
       role: 'Soporte de Salas', site: 'Megacentro',
     });
     expect(resolveDepartment('Coordinador de Producto')).toMatchObject({
       role: 'Coordinador', site: 'Megacentro', area: 'Producto',
+    });
+  });
+
+  it('la variante de San Miguel de auxiliares de red no se mueve a Megacentro', () => {
+    expect(resolveDepartment('Auxiliares de Red y Soporte-SM')).toMatchObject({
+      role: 'Redes', site: 'San Miguel',
     });
   });
 

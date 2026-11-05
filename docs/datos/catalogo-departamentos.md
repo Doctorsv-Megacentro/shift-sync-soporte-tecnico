@@ -31,10 +31,10 @@ Departamento → rol, sede y área. Fuente: plan §5.4. Decisión: [ADR-0009](..
 | AT N1 | N1 | Atento | |
 | Coordinador de Producto | Coordinador | Megacentro | Producto |
 | Supervisor Tercerias | Supervisor | Megacentro | Tercería |
-| Especialistas de Producto | Producto | — | |
+| Especialistas de Producto | Producto | Megacentro | Producto |
 | Tercerias | Tercería | Megacentro | Tercería |
 | Especialistas de Redes | Redes | Megacentro | |
-| Auxiliares de Red y Soporte | Redes | — | |
+| Auxiliares de Red y Soporte | Redes | Megacentro | |
 | Coordinador Santa Ana | Coordinador | Santa Ana | |
 | N1 ST ANA | N1 | Santa Ana | |
 | Coordinadora San Miguel | Coordinador | San Miguel | |
@@ -45,11 +45,12 @@ Departamento → rol, sede y área. Fuente: plan §5.4. Decisión: [ADR-0009](..
 | Administrador de Redes | Redes | Megacentro | |
 
 **Reasignación de sede (2026-11-05, petición de jefatura):** Atención Gestión Salas, Activo Fijo,
-Administrador de Redes, Especialistas de Redes, Coordinador de Producto, QA, Supervisor Tercerias y
-Tercerias pasan a Megacentro; Soporte Tecnologico y Salas pasa a Phoenix Tower. Como consecuencia,
-«Activo Fijo» deja de tener departamentos propios y se retira de la lista de sedes (antes era una de
-las 7; ver «Los valores posibles» abajo). «Auxiliares de Red y Soporte» y «Especialistas de Producto»
-no se tocaron: siguen Sin sede.
+Administrador de Redes, Especialistas de Redes, Auxiliares de Red y Soporte, Coordinador de
+Producto, Especialistas de Producto, QA, Supervisor Tercerias y Tercerias pasan a Megacentro;
+Soporte Tecnologico y Salas pasa a Phoenix Tower. Como consecuencia, «Activo Fijo» deja de tener
+departamentos propios y se retira de la lista de sedes (antes era una de las 7; ver «Los valores
+posibles» abajo), y «Coordinador Operaciones» queda como el único departamento Sin sede.
+«Auxiliares de Red y Soporte-SM» (la variante de San Miguel) no se tocó: sigue en San Miguel.
 
 **«Adminsitrador de Redes» está mal escrito en la hoja original.** Se mantiene como alias para que
 la carga no falle, y dispara el conflicto `departamento-mal-escrito` (baja), que propone corregir el
@@ -88,8 +89,8 @@ Activo Fijo. Más `Otro` para lo desconocido.
 «Activo Fijo» ya no es una sede: era la única que usaba el departamento Activo Fijo, y ese
 departamento pasó a Megacentro.
 
-«Sin sede» no es un error: hay departamentos transversales (coordinación, producto, redes, QA) que
-no pertenecen a una sede física. Se muestra con una etiqueta más tenue.
+«Sin sede» no es un error: Coordinador Operaciones es transversal y no pertenece a una sede física.
+Se muestra con una etiqueta más tenue.
 
 ## Cómo verificarlo
 

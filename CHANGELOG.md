@@ -103,10 +103,11 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
 ### Cambiado
 
 - Reasignación de sede en el catálogo de departamentos, a petición de jefatura: Atención Gestión
-  Salas, Activo Fijo, Administrador de Redes, Especialistas de Redes, Coordinador de Producto, QA,
-  Supervisor Tercerias y Tercerias pasan a Megacentro; Soporte Tecnologico y Salas pasa a Phoenix
-  Tower. «Activo Fijo» deja de existir como sede, al quedar sin departamentos propios (ficha:
-  docs/datos/catalogo-departamentos.md).
+  Salas, Activo Fijo, Administrador de Redes, Especialistas de Redes, Auxiliares de Red y Soporte,
+  Coordinador de Producto, Especialistas de Producto, QA, Supervisor Tercerias y Tercerias pasan a
+  Megacentro; Soporte Tecnologico y Salas pasa a Phoenix Tower. «Activo Fijo» deja de existir como
+  sede, al quedar sin departamentos propios; Coordinador Operaciones queda como el único Sin sede
+  (ficha: docs/datos/catalogo-departamentos.md).
 
 ### Corregido
 

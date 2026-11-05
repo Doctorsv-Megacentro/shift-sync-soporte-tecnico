@@ -91,8 +91,8 @@ Sirven de prueba de regresión del panel.
 
 - **En turno** 73 de 103 · **libres** 29 · **vacaciones** 1 · **cruzan medianoche** 9.
 - **Franjas:** Mañana 33 · Día 8 · Tarde 23 · Noche 9.
-- **Por sede** (en turno / total): Megacentro 31/45 · Tuscania 12/18 · Phoenix Tower 11/18 ·
-  Santa Ana 5/5 · San Miguel 4/5 · Atento 1/2 · Sin sede 9/10. (Cifras tras la reasignación de sede
+- **Por sede** (en turno / total): Megacentro 39/54 · Tuscania 12/18 · Phoenix Tower 11/18 ·
+  Santa Ana 5/5 · San Miguel 4/5 · Atento 1/2 · Sin sede 1/1. (Cifras tras la reasignación de sede
   del 2026-11-05: ver `docs/datos/catalogo-departamentos.md`.)
 
 «En turno» cuenta los turnos que **empiezan** ese día.
