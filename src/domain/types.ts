@@ -36,7 +36,7 @@ export type Role =
   | 'Activo Fijo'
   | 'Otro';
 
-/** Las 7 sedes, más `Sin sede` para los departamentos transversales. */
+/** Las 6 sedes, más `Sin sede` para los departamentos transversales. */
 export type Site =
   | 'Megacentro'
   | 'Tuscania'
@@ -44,7 +44,6 @@ export type Site =
   | 'Atento'
   | 'Santa Ana'
   | 'San Miguel'
-  | 'Activo Fijo'
   | 'Sin sede';
 
 /** Categoría de color de un turno, por su hora de entrada (plan §5.3). */

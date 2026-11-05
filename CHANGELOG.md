@@ -96,8 +96,17 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
 - Flujo E2E de producción (`npm run e2e`) en escritorio y móvil de 390 px: publicar, crear el
   enlace de la operación, consultar, cambiar un día, deshacer y revocar (plan Fase 8).
 - Runbooks de pausa de Supabase Free, respaldo con `pg_dump` y corte preparado de v1 a v2
-  ([ADR-0017](docs/adr/0017-corte-escalonado-de-v1.md), **Propuesto**). No hay todavía proyectos
-  en la nube ni URL estable; no se etiqueta `v1.0.0` ni se apaga v1.
+  ([ADR-0017](docs/adr/0017-corte-escalonado-de-v1.md), **Propuesto**). Hay un proyecto Supabase
+  de pruebas y Vercel `shift-sync-soporte` conectado al repo público. El corte de v1 sigue
+  pendiente. No se etiqueta `v1.0.0` ni se apaga v1.
+
+### Cambiado
+
+- Reasignación de sede en el catálogo de departamentos, a petición de jefatura: Atención Gestión
+  Salas, Activo Fijo, Administrador de Redes, Especialistas de Redes, Coordinador de Producto, QA,
+  Supervisor Tercerias y Tercerias pasan a Megacentro; Soporte Tecnologico y Salas pasa a Phoenix
+  Tower. «Activo Fijo» deja de existir como sede, al quedar sin departamentos propios (ficha:
+  docs/datos/catalogo-departamentos.md).
 
 ### Corregido
 

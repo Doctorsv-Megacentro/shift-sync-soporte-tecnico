@@ -3,9 +3,10 @@
 Esquema, RLS y RPC viven en `supabase/migrations/`, **una migración por cambio**. Modelo completo:
 [../arquitectura/modelo-de-datos.md](../arquitectura/modelo-de-datos.md).
 
-> **Estado: migraciones locales aplicadas** (esquema, horario, cambios, panel y Compartir completo:
-> `20261105015523_compartir_completo.sql`). No hay proyecto de desarrollo ni de
-> producción todavía — eso es trabajo de consola de Ado, ver §13-3/§13-4 en `docs/progreso.md`.
+> **Estado: migraciones aplicadas en local y en el proyecto de pruebas**
+> `tuemfuocmrysmtmfjqkk` (nombre `shift-sync`, organización Supabase «Adonys Projects»,
+> la misma cuenta donde vive `delirium-hub`). No es el corte de producción: sigue
+> faltando un proyecto separado para producción y los correos de `admins`.
 
 ## El stack local de este repo
 

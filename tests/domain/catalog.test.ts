@@ -20,7 +20,7 @@ describe('coincidencia exacta', () => {
     expect(resolveDepartment('N1 ST ANA')).toMatchObject({ role: 'N1', site: 'Santa Ana' });
     expect(resolveDepartment('N1 SAN MIGUEL')).toMatchObject({ role: 'N1', site: 'San Miguel' });
     expect(resolveDepartment('Activo Fijo')).toMatchObject({
-      role: 'Activo Fijo', site: 'Activo Fijo',
+      role: 'Activo Fijo', site: 'Megacentro',
     });
   });
 
@@ -33,14 +33,41 @@ describe('coincidencia exacta', () => {
     });
   });
 
-  it('los departamentos transversales quedan sin sede, y eso no es un error', () => {
-    expect(resolveDepartment('QA')).toMatchObject({ role: 'QA', site: 'Sin sede', match: 'exact' });
-    expect(resolveDepartment('Tercerias')).toMatchObject({ role: 'Tercería', site: 'Sin sede' });
-    expect(resolveDepartment('Especialistas de Redes')).toMatchObject({
+  it('algunos departamentos transversales quedan sin sede, y eso no es un error', () => {
+    expect(resolveDepartment('Coordinador Operaciones')).toMatchObject({
+      role: 'Coordinador', site: 'Sin sede',
+    });
+    expect(resolveDepartment('Especialistas de Producto')).toMatchObject({
+      role: 'Producto', site: 'Sin sede',
+    });
+    expect(resolveDepartment('Auxiliares de Red y Soporte')).toMatchObject({
       role: 'Redes', site: 'Sin sede',
     });
+  });
+
+  it('QA, tercerías, redes y atención de salas están en Megacentro', () => {
+    expect(resolveDepartment('QA')).toMatchObject({ role: 'QA', site: 'Megacentro', match: 'exact' });
+    expect(resolveDepartment('Tercerias')).toMatchObject({ role: 'Tercería', site: 'Megacentro' });
+    expect(resolveDepartment('Supervisor Tercerias')).toMatchObject({
+      role: 'Supervisor', site: 'Megacentro', area: 'Tercería',
+    });
+    expect(resolveDepartment('Especialistas de Redes')).toMatchObject({
+      role: 'Redes', site: 'Megacentro',
+    });
+    expect(resolveDepartment('Administrador de Redes')).toMatchObject({
+      role: 'Redes', site: 'Megacentro',
+    });
+    expect(resolveDepartment('Atencion Gestion Salas')).toMatchObject({
+      role: 'Soporte de Salas', site: 'Megacentro',
+    });
+    expect(resolveDepartment('Coordinador de Producto')).toMatchObject({
+      role: 'Coordinador', site: 'Megacentro', area: 'Producto',
+    });
+  });
+
+  it('soporte tecnológico y salas está en Phoenix Tower', () => {
     expect(resolveDepartment('Soporte Tecnologico y Salas')).toMatchObject({
-      role: 'Soporte de Salas', site: 'Sin sede',
+      role: 'Soporte de Salas', site: 'Phoenix Tower',
     });
   });
 
@@ -78,7 +105,7 @@ describe('departamento mal escrito en la hoja', () => {
   // «Adminsitrador de Redes» viene así en el original. No se toca la hoja.
   it('acepta el alias y lo marca como tal', () => {
     const r = resolveDepartment('Adminsitrador de Redes');
-    expect(r).toMatchObject({ role: 'Redes', site: 'Sin sede', match: 'alias' });
+    expect(r).toMatchObject({ role: 'Redes', site: 'Megacentro', match: 'alias' });
   });
 
   it('la forma correcta también funciona, y como exacta', () => {
@@ -164,9 +191,9 @@ describe('el catálogo cubre lo que la hoja real trae', () => {
     }
   });
 
-  it('el catálogo cubre las 7 sedes más Sin sede', () => {
+  it('el catálogo cubre las 6 sedes más Sin sede', () => {
     const sedes = new Set([...CATALOGO.values()].map((e) => e.site));
-    expect(sedes.size).toBe(8);
+    expect(sedes.size).toBe(7);
     for (const sede of SEDES) expect(sedes.has(sede), sede).toBe(true);
   });
 });

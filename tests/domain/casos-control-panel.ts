@@ -65,14 +65,13 @@ export function verificarCasosDeControl(libro: ParsedWorkbook): void {
   expect(franjas).toEqual({ Mañana: 33, Día: 8, Tarde: 23, Noche: 9 });
   const sedes = Object.fromEntries(sedesDelDia(indice, '2026-11-02').map((s) => [s.site, `${s.enTurno}/${s.total}`]));
   expect(sedes).toEqual({
-    Megacentro: '15/22',
+    Megacentro: '31/45',
     Tuscania: '12/18',
-    'Phoenix Tower': '6/8',
+    'Phoenix Tower': '11/18',
     'Santa Ana': '5/5',
     'San Miguel': '4/5',
     Atento: '1/2',
-    'Activo Fijo': '3/3',
-    'Sin sede': '27/40',
+    'Sin sede': '9/10',
   });
   expect(departamentosDelDia(indice, '2026-11-02').length).toBeGreaterThan(10);
 }

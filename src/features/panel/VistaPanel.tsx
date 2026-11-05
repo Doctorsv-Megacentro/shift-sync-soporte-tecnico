@@ -26,7 +26,6 @@ const ORDEN_SEDES: readonly Site[] = [
   'Santa Ana',
   'San Miguel',
   'Atento',
-  'Activo Fijo',
   'Sin sede',
 ];
 

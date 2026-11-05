@@ -13,7 +13,7 @@ Estado del MVP de ShiftSync v2. Se actualiza en **cada** cambio (Definición de 
 | 5 | Cambiar un día + registro de cambios | **Hecho** | Sonnet. Los CTA de compartir se conectaron en la Fase 7 |
 | 6 | Panel y conflictos | **Hecho** | Opus. 16 reglas; el «17» de descansos justos de noviembre da 12 con la fórmula escrita |
 | 7 | Compartir completo | **Hecho** | Sonnet. Cinco alcances, tres vencimientos, activos y revocación |
-| 8 | Producción | **Hecho en local, bloqueado en nube** | E2E verde; sin Supabase cloud ni preview |
+| 8 | Producción | **Hecho en local; pruebas en nube a medias** | Supabase de pruebas listo; Vercel creado, sin Git todavía |
 
 ## Último cambio
 
@@ -283,10 +283,11 @@ El stack local de Supabase y el servidor de desarrollo se apagaron al terminar
 
 ## Siguiente paso
 
-**Aprovisionar la nube** cuando jefatura lo autorice: dos proyectos Supabase (desarrollo y
-producción), un proyecto Vercel **nuevo** enlazado a este repo, primer respaldo con prueba de
-restauración, preview y después validación con jefatura antes de cortar v1 (ADR-0017). Los
-umbrales del bloqueo §2 siguen **Propuestos**.
+**Primer despliegue de pruebas.** `shift-sync-soporte` ya está conectado al repo público y
+tiene las variables del Supabase `tuemfuocmrysmtmfjqkk`. El enlace no despliega el commit que
+ya estaba en `main`; el primer build sale con el siguiente push. Después: Google Auth, correos
+en `admins`, y un proyecto de producción separado antes de cortar v1 (ADR-0017). Los umbrales
+del bloqueo §2 siguen **Propuestos**.
 
 Pendiente de sesiones anteriores, para retomar cuando toque:
 

@@ -107,7 +107,6 @@ export const SEDES: readonly Site[] = [
   'Atento',
   'Santa Ana',
   'San Miguel',
-  'Activo Fijo',
   'Sin sede',
 ];
 

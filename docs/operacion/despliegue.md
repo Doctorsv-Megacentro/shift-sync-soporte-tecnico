@@ -10,10 +10,17 @@ Fuente: plan §12.
 | *Preview* | Vercel, una URL por PR | Supabase de desarrollo | cada push a una rama con PR |
 | *Production* | Vercel | Supabase de **producción** | `main` |
 
-**Estado al 2026-11-04:** solo existe el entorno local. Por decisión de la Fase 8 todavía no se
-crearon los proyectos Supabase de desarrollo/producción. Sin ellos no se puede validar un
-*preview* funcional ni promover producción. El proyecto Vercel existente con nombre parecido
-pertenece a otro repositorio y no debe reutilizarse.
+**Estado al 2026-11-04:** hay un proyecto de **pruebas**, no el corte de producción.
+
+| Pieza | Qué es |
+|---|---|
+| Supabase | `shift-sync` · ref `tuemfuocmrysmtmfjqkk` · región `us-east-1` · cuenta «Adonys Projects», junto a `delirium-hub`. Las 6 migraciones ya están aplicadas |
+| Vercel | Proyecto nuevo `shift-sync-soporte` en el equipo personal (plan Hobby). El proyecto `shiftsync` de v1 no se toca |
+| Git | [Doctorsv-Megacentro/shift-sync-soporte-tecnico](https://github.com/Doctorsv-Megacentro/shift-sync-soporte-tecnico), público, conectado a `shift-sync-soporte`. El plan Hobby no admite un repo privado de una organización |
+
+Las variables `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_URL` y
+`SUPABASE_SERVICE_ROLE_KEY` ya están en Production, Preview y Development de
+`shift-sync-soporte`. `.env.local` apunta a este mismo proyecto de pruebas.
 
 ## Qué es público
 
@@ -37,8 +44,9 @@ Ver [../arquitectura/seguridad.md](../arquitectura/seguridad.md).
    revocar el enlace y ver el panel.
 9. Crear y restaurar el primer respaldo siguiendo [respaldo.md](respaldo.md).
 
-Los pasos 1–9 no se han ejecutado todavía. No etiquetar `v1.0.0` ni iniciar el corte de v1 hasta
-completarlos y recibir la validación de jefatura.
+El proyecto de pruebas cubre una sola base y un proyecto Vercel todavía sin Git. Los pasos de
+producción (proyecto separado, preview, corte y respaldo restaurado) no se han ejecutado. No
+etiquetar `v1.0.0` ni iniciar el corte de v1 hasta completarlos y recibir la validación de jefatura.
 
 ## Configuración de Vercel
 
