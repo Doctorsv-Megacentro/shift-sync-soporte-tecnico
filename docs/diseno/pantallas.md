@@ -6,7 +6,8 @@ Las capturas viven en `referencias/diseno/capturas/`, que **no está en el repo*
 ([ADR-0011](../adr/0011-datos-personales-fuera-del-repo.md)). Los mockups `.dc.html` del mismo
 paquete tienen los **textos literales** de la interfaz: se copian tal cual.
 
-> **Estado: ninguna pantalla implementada.** Se construyen de la Fase 2 a la 7.
+> **Estado: pantallas funcionales implementadas hasta la Fase 7; queda la revisión visual indicada
+> en la última columna.**
 
 ## Lista de verificación visual
 
@@ -22,16 +23,16 @@ fase.
 | Empleado · móvil 390 px | `/s/:slug` | `05-empleado-movil.png` | `Empleado.dc.html` | 3 | ☐ |
 | Jefe · Fuente · Google Sheet | `/jefe/fuente` | `06-jefe-fuente-google-sheet.png` | `Fuente.dc.html` | 2 | ☐ |
 | Jefe · Fuente · subir Excel | `/jefe/fuente` | `07-jefe-fuente-excel.png` | `Fuente.dc.html` | 2 | ☐ |
-| Jefe · Panel y conflictos | `/jefe/panel` | `08-jefe-panel-conflictos.png` | `DashOps.dc.html` | 6 | ☐ |
-| Jefe · conflicto con opción elegida | `/jefe/panel` | `09-jefe-conflicto-opcion-elegida.png` | `DashOps.dc.html` | 6 | ☐ |
+| Jefe · Panel y conflictos | `/jefe/panel` | `08-jefe-panel-conflictos.png` | `DashOps.dc.html` | 6 | ☐ (funcional, falta revisión pixel a pixel) |
+| Jefe · conflicto con opción elegida | `/jefe/panel` | `09-jefe-conflicto-opcion-elegida.png` | `DashOps.dc.html` | 6 | ☐ (funcional, falta revisión pixel a pixel) |
 | Jefe · Horario · Semana | `/jefe/horario` | `10-jefe-horario-semana.png` | `GridOps.dc.html` | 4 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 | Jefe · Cambiar un día (inicial) | `/jefe/horario` | `11-jefe-editar-dia.png` | `GridOps.dc.html` | 5 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 | Jefe · Cambiar un día con datos | `/jefe/horario` | `12-jefe-editar-dia-con-cambios.png` | `GridOps.dc.html` | 5 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 | Jefe · cambio guardado | `/jefe/horario` | `13-jefe-cambio-guardado.png` | `GridOps.dc.html` | 5 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 | Jefe · alerta de descanso | `/jefe/horario` | `13b-jefe-editar-dia-alerta-descanso.png` | `GridOps.dc.html` | 5 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 | Jefe · Registro de cambios | `/jefe/horario` | `14-jefe-registro-de-cambios.png` | `GridOps.dc.html` | 5 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
-| Jefe · Compartir | `/jefe/compartir` | `15-jefe-compartir.png` | `GridOps.dc.html` | 7 | ☐ |
-| Jefe · enlace copiado | `/jefe/compartir` | `16-jefe-compartir-copiado.png` | `GridOps.dc.html` | 7 | ☐ |
+| Jefe · Compartir | `/jefe/compartir` | `15-jefe-compartir.png` | `GridOps.dc.html` | 7 | ☐ (funcional, referencias no disponibles para pixel-perfect) |
+| Jefe · enlace copiado | `/jefe/compartir` | `16-jefe-compartir-copiado.png` | `GridOps.dc.html` | 7 | ☐ (funcional, referencias no disponibles para pixel-perfect) |
 | Jefe · vista rápida de persona | `/jefe/horario` | `17-jefe-vista-rapida-persona.png` | `GridOps.dc.html` | 4 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 | Jefe · Horario · Día | `/jefe/horario` | `18-jefe-horario-dia.png` | `GridOps.dc.html` | 4 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 

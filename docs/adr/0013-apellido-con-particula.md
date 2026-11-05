@@ -20,7 +20,7 @@ cuando un apellido lleva partícula y hay un solo nombre de pila:
 | En la hoja | Grupos | Regla del plan | Resultado | Correcto |
 |---|---|---|---|---|
 | `CRUZ DE MOLINA SOFIA ELENA` | `CRUZ` · `DE MOLINA` · `SOFIA` · `ELENA` | 4 → 2 + 2 | «Sofia Elena Cruz de Molina» | ✅ |
-| `CRUZ DE LEON MARTA` | `CRUZ` · `DE LEON` · `MARTA` | 3 → 1 + 2 | «**De Leon Marta Cruz**» | ❌ «Marta Cruz de Leon» |
+| `FUENTES DE LEON NURIA` | `FUENTES` · `DE LEON` · `NURIA` | 3 → 1 + 2 | «**De Leon Nuria Fuentes**» | ❌ «Nuria Fuentes de Leon» |
 
 El segundo caso parte el apellido `DE LEON` y lo coloca como primer nombre. Es un error que cualquier
 persona ve de inmediato en su propio horario, y la hoja real tiene apellidos con partícula.
@@ -65,7 +65,7 @@ no puede ser el primer nombre.
 En `tests/domain/names.test.ts`, el caso «un apellido con partícula no se confunde con un nombre»:
 
 ```
-CRUZ DE LEON MARTA   → «Marta Cruz de Leon»
+FUENTES DE LEON NURIA   → «Nuria Fuentes de Leon»
 RAMOS DE LA PAZ ANA  → «Ana Ramos de la Paz»
 ```
 

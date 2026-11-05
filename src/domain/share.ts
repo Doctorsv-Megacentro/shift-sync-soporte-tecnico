@@ -1,11 +1,56 @@
 /**
- * Slug y vencimiento de un enlace de solo lectura. El alcance de la Fase 3
- * es solo «toda la operación»; `semana`, `dia`, `persona` y `cambio` quedan
- * para la Fase 7 (plan §7.6).
+ * Configura los cinco alcances, slugs y vencimientos de los enlaces de solo
+ * lectura. Fase 7, plan §7.6. Ficha: docs/features/compartir.md.
  */
+
+import type { DateKey, Role, Site } from './types.ts';
 
 /** Los cinco alcances del modelo (coincide con el check de `share_links`). */
 export type ShareScope = 'operacion' | 'semana' | 'dia' | 'persona' | 'cambio';
+
+export interface ShareParams {
+  readonly start_date?: DateKey;
+  readonly date?: DateKey;
+  readonly person_key?: string;
+  readonly person_keys?: readonly string[];
+  readonly site?: Site | 'Todas';
+  readonly role?: Role | 'Todos';
+}
+
+export interface ShareLinkDraft {
+  readonly scope: ShareScope;
+  readonly params: ShareParams;
+  readonly title: string;
+}
+
+export interface ShareRestrictions {
+  readonly fixedPersonKey: string | null;
+  readonly fixedDate: DateKey | null;
+  readonly startDate: DateKey | null;
+  readonly endDate: DateKey | null;
+  readonly showSearch: boolean;
+  readonly highlightChange: boolean;
+}
+
+const PREFIJO: Record<ShareScope, string> = {
+  operacion: 'operacion',
+  semana: 'semana',
+  dia: 'dia',
+  persona: 'persona',
+  cambio: 'cambio',
+};
+
+export const ETIQUETA_SCOPE: Record<ShareScope, string> = {
+  operacion: 'Toda la operación',
+  semana: 'Esta semana con los filtros',
+  dia: 'Un día',
+  persona: 'Una persona',
+  cambio: 'Un cambio',
+};
+
+export function prefijoDeAlcance(scope: ShareScope): string {
+  return PREFIJO[scope];
+}
 
 const BASE62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -45,4 +90,27 @@ export function calcularVencimiento(opcion: Vencimiento, ahora: Date = new Date(
 export function enlaceVigente(expiresAt: string, revokedAt: string | null, ahora: Date = new Date()): boolean {
   if (revokedAt !== null) return false;
   return new Date(expiresAt).getTime() > ahora.getTime();
+}
+
+/** Restricciones de navegación que aplica `/s/:slug` además del filtro SQL. */
+export function restriccionesDeEnlace(scope: ShareScope, params: ShareParams): ShareRestrictions {
+  const fixedPersonKey = scope === 'persona' || scope === 'cambio' ? (params.person_key ?? null) : null;
+  const fixedDate = scope === 'dia' || scope === 'cambio' ? (params.date ?? null) : null;
+  const startDate = scope === 'semana' ? (params.start_date ?? null) : fixedDate;
+  const endDate = scope === 'semana' && startDate !== null ? sumarDias(startDate, 6) : fixedDate;
+  return {
+    fixedPersonKey,
+    fixedDate,
+    startDate,
+    endDate,
+    showSearch: scope === 'operacion' || scope === 'semana' || scope === 'dia',
+    highlightChange: scope === 'cambio',
+  };
+}
+
+function sumarDias(date: DateKey, dias: number): DateKey {
+  const [year, month, day] = date.split('-').map(Number);
+  const valor = new Date(Date.UTC(year ?? 0, (month ?? 1) - 1, day ?? 1));
+  valor.setUTCDate(valor.getUTCDate() + dias);
+  return valor.toISOString().slice(0, 10);
 }

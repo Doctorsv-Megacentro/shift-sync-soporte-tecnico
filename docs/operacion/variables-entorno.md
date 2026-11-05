@@ -59,6 +59,22 @@ Se configuran en el panel del proyecto, por entorno:
 
 Al añadir `SUPABASE_SERVICE_ROLE_KEY`, marcarla como *Sensitive*.
 
+## Google Auth (jefatura)
+
+El botón «Entrar con Google» llama a `signInWithOAuth({ provider: 'google' })` y vuelve a
+`${origin}/jefe/fuente`. Hay que configurarlo en el proyecto Supabase, no en el repo:
+
+1. Authentication → Providers → Google: Client ID y Client Secret de Google Cloud.
+2. Authentication → URL Configuration:
+   - **Site URL:** la URL de ese entorno (`http://127.0.0.1:5173` en local; la de Vercel en
+     preview/producción).
+   - **Redirect URLs:** `{origen}/jefe/fuente` y la callback de Supabase
+     (`{SUPABASE_URL}/auth/v1/callback`).
+3. En Google Cloud, los mismos orígenes autorizados.
+
+Sin este paso, jefatura no entra aunque `admins` ya tenga el correo. No aplica al stack local de
+las pruebas: los E2E inician sesión con correo y contraseña sintéticos.
+
 ## Si una clave se filtra
 
 1. Rotarla en Supabase (Project Settings → API → *Reset*).

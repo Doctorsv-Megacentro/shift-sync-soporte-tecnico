@@ -20,6 +20,7 @@ import {
   type Alcance,
 } from '@/domain/presence.ts';
 import { endsNextDay, shiftCategory, shiftDuration } from '@/domain/shift.ts';
+import { restriccionesDeEnlace, type ShareRestrictions } from '@/domain/share.ts';
 import {
   addDays,
   formatDuration,
@@ -83,12 +84,25 @@ export function VistaPersona({ slug, vista }: { slug: string; vista: VistaCompar
   const mesEfectivo = useMemo(() => ({ ...mesCombinado, entries: entradasEfectivas }), [mesCombinado, entradasEfectivas]);
   const indice = useMemo(() => indexarMes(mesEfectivo), [mesEfectivo]);
   const indiceOriginal = useMemo(() => indexarMes(mesCombinado), [mesCombinado]);
+  const restricciones = useMemo(
+    () => restriccionesDeEnlace(vista.scope, vista.params),
+    [vista.scope, vista.params],
+  );
 
   const hoy = hoyDateKey();
   const primerDiaConDatos = mesCombinado.dates[0] ?? hoy;
-  const diaInicial = mesCombinado.dates.includes(hoy) ? hoy : primerDiaConDatos;
+  const primerDiaDePersona =
+    restricciones.fixedPersonKey === null
+      ? null
+      : (mesCombinado.entries.find((e) => e.personKey === restricciones.fixedPersonKey)?.date ?? null);
+  const diaInicial =
+    restricciones.fixedDate
+    ?? restricciones.startDate
+    ?? primerDiaDePersona
+    ?? (mesCombinado.dates.includes(hoy) ? hoy : primerDiaConDatos);
 
   const [personaKey, setPersonaKey] = useState<string | null>(() => {
+    if (restricciones.fixedPersonKey !== null) return restricciones.fixedPersonKey;
     const guardada = leerPersonaGuardada(slug);
     return guardada !== null && indice.personas.has(guardada) ? guardada : null;
   });
@@ -103,6 +117,7 @@ export function VistaPersona({ slug, vista }: { slug: string; vista: VistaCompar
   const persona = claveMostrada === null ? null : indice.personas.get(claveMostrada) ?? null;
 
   function elegirPersona(key: string) {
+    if (!restricciones.showSearch) return;
     setPersonaKey(key);
     guardarPersona(slug, key);
     setConsulta('');
@@ -124,8 +139,8 @@ export function VistaPersona({ slug, vista }: { slug: string; vista: VistaCompar
           <strong style={{ fontSize: 17 }}>ShiftSync</strong>
           <span style={{ color: 'var(--texto-3)' }}>
             {' '}
-            · Horario de la operación
-            {mesCombinado.month !== '' && ` · ${capitaliza(nombreMes(mesCombinado.month))} ${mesCombinado.month.slice(0, 4)}`}
+            · {vista.title ?? 'Horario de la operación'}
+            {mesCombinado.month !== '' && ` · ${capitaliza(nombreMes(diaSeleccionado))} ${diaSeleccionado.slice(0, 4)}`}
           </span>
         </div>
         {fuenteTexto !== null && (
@@ -136,14 +151,16 @@ export function VistaPersona({ slug, vista }: { slug: string; vista: VistaCompar
       </header>
 
       <section style={estiloTarjeta}>
-        <p style={estiloEtiqueta}>¿Quién eres?</p>
-        <input
-          value={consulta}
-          onChange={(e) => setConsulta(e.target.value)}
-          placeholder="Escribe tu nombre, por ejemplo Josué o Yenifer"
-          style={estiloCampo}
-        />
-        {consulta.trim() !== '' && (
+        <p style={estiloEtiqueta}>{restricciones.showSearch ? '¿Quién eres?' : 'Horario compartido'}</p>
+        {restricciones.showSearch && (
+          <input
+            value={consulta}
+            onChange={(e) => setConsulta(e.target.value)}
+            placeholder="Escribe tu nombre, por ejemplo Josué o Yenifer"
+            style={estiloCampo}
+          />
+        )}
+        {restricciones.showSearch && consulta.trim() !== '' && (
           <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0' }}>
             {resultados.map((p) => (
               <li key={p.key} style={estiloFilaResultado}>
@@ -174,7 +191,7 @@ export function VistaPersona({ slug, vista }: { slug: string; vista: VistaCompar
             <span style={{ color: 'var(--texto-3)', fontSize: 13 }}>{persona.department}</span>
           </p>
         )}
-        {mostrandoKey !== null && mostrandoKey !== personaKey && (
+        {restricciones.showSearch && mostrandoKey !== null && mostrandoKey !== personaKey && (
           <button type="button" onClick={() => setMostrandoKey(null)} style={{ ...estiloBotonSecundario, marginTop: 10 }}>
             Volver a mi horario
           </button>
@@ -195,6 +212,7 @@ export function VistaPersona({ slug, vista }: { slug: string; vista: VistaCompar
           onAlcance={setAlcance}
           onMostrarPersona={setMostrandoKey}
           hoy={hoy}
+          restricciones={restricciones}
         />
       )}
 
@@ -228,6 +246,7 @@ function CuerpoPersona(props: {
   onAlcance: (a: Alcance) => void;
   onMostrarPersona: (key: string) => void;
   hoy: DateKey;
+  restricciones: ShareRestrictions;
 }) {
   const {
     personaKey,
@@ -240,9 +259,10 @@ function CuerpoPersona(props: {
     onAlcance,
     onMostrarPersona,
     hoy,
+    restricciones,
   } = props;
 
-  const semana = weekDates(diaSeleccionado);
+  const semana = weekDates(restricciones.startDate ?? diaSeleccionado);
   const resumen = resumirSemana(indice, personaKey, semana);
   const diaActual = diaDe(indice, personaKey, diaSeleccionado);
   const diaOriginal = diaDe(indiceOriginal, personaKey, diaSeleccionado);
@@ -261,6 +281,7 @@ function CuerpoPersona(props: {
             <button
               type="button"
               aria-label="Semana anterior"
+              disabled={restricciones.startDate !== null}
               onClick={() => onDiaSeleccionado(addDays(startOfWeek(diaSeleccionado), -7))}
               style={estiloFlecha}
             >
@@ -272,6 +293,7 @@ function CuerpoPersona(props: {
             <button
               type="button"
               aria-label="Semana siguiente"
+              disabled={restricciones.endDate !== null}
               onClick={() => onDiaSeleccionado(addDays(startOfWeek(diaSeleccionado), 7))}
               style={estiloFlecha}
             >
@@ -291,6 +313,7 @@ function CuerpoPersona(props: {
                 type="button"
                 className="ss-dia"
                 aria-current={fecha === diaSeleccionado}
+                disabled={restricciones.fixedDate !== null && fecha !== restricciones.fixedDate}
                 onClick={() => onDiaSeleccionado(fecha)}
               >
                 {tieneCambio && <span className="ss-punto-cambio" aria-hidden />}
@@ -321,7 +344,13 @@ function CuerpoPersona(props: {
         </p>
       </section>
 
-      <section style={{ ...estiloTarjeta, borderLeft: '4px solid var(--cambio-jefatura)' }}>
+      <section
+        style={{
+          ...estiloTarjeta,
+          borderLeft: '4px solid var(--cambio-jefatura)',
+          ...(restricciones.highlightChange ? { boxShadow: '0 0 0 3px var(--cambio-jefatura)' } : {}),
+        }}
+      >
         <div style={{ fontSize: 11, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--texto-3)' }}>
           {fechaCorta(diaSeleccionado)}
           {diaSeleccionado === hoy ? ' · HOY' : ''}
@@ -407,7 +436,10 @@ function CuerpoPersona(props: {
                     key={`${p.key}-${i}`}
                     type="button"
                     className="ss-fila-presencia"
-                    onClick={() => onMostrarPersona(p.key)}
+                    aria-disabled={!restricciones.showSearch}
+                    onClick={() => {
+                      if (restricciones.showSearch) onMostrarPersona(p.key);
+                    }}
                   >
                     <span className="ss-punto-rol" aria-hidden style={{ background: COLOR_ROL[p.role].borde }} />
                     <span className="ss-nombre">{p.displayName}</span>

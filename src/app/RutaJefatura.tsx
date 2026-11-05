@@ -1,20 +1,30 @@
 /**
  * Guardián de sesión para `/jefe/*`: sin sesión pide iniciar con Google, con
  * sesión pero sin acceso muestra «No tienes acceso», con acceso pinta el
- * layout de jefatura (menú lateral) y la ruta pedida. ADR-0006, ADR-0015.
+ * layout de jefatura (menú lateral; barra superior bajo 700 px) y la ruta
+ * pedida. ADR-0006, ADR-0015.
  */
 
-import type { ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { cerrarSesion, iniciarSesionConGoogle } from '@/data/auth.ts';
+import { listarConflictos } from '@/domain/conflicts/index.ts';
+import { obtenerDatosPanel, type DatosPanel } from '@/data/panel.ts';
 import { useSesion } from './useSesion.ts';
+import './jefatura.css';
 
 const ITEMS_MENU = [
   { href: '/jefe/fuente', etiqueta: 'Fuente de datos', listo: true },
-  { href: '/jefe/panel', etiqueta: 'Panel y conflictos', listo: false },
+  { href: '/jefe/panel', etiqueta: 'Panel y conflictos', listo: true },
   { href: '/jefe/horario', etiqueta: 'Horario completo', listo: true },
-  { href: '/jefe/compartir', etiqueta: 'Compartir', listo: false },
+  { href: '/jefe/compartir', etiqueta: 'Compartir', listo: true },
 ] as const;
+
+export interface ContextoJefatura {
+  readonly carga: 'idle' | 'cargando' | 'ok' | 'error';
+  readonly datos: DatosPanel | null;
+  readonly recargar: () => Promise<void>;
+}
 
 function Centrado({ children }: { children: ReactNode }) {
   return (
@@ -34,6 +44,25 @@ function Centrado({ children }: { children: ReactNode }) {
 
 export function RutaJefatura() {
   const sesion = useSesion();
+  const [datos, setDatos] = useState<DatosPanel | null>(null);
+  const [carga, setCarga] = useState<ContextoJefatura['carga']>('idle');
+
+  const recargar = useCallback(async () => {
+    const siguientes = await obtenerDatosPanel();
+    setDatos(siguientes);
+    setCarga('ok');
+  }, []);
+
+  useEffect(() => {
+    if (sesion.tipo !== 'jefatura') return;
+    setCarga('cargando');
+    void recargar().catch(() => setCarga('error'));
+  }, [sesion.tipo, recargar]);
+
+  const pendientes = useMemo(() => {
+    if (datos === null) return null;
+    return listarConflictos(datos.months, datos.overrides, datos.acks).pendientes.length;
+  }, [datos]);
 
   if (sesion.tipo === 'cargando') {
     return <Centrado>Cargando…</Centrado>;
@@ -91,25 +120,19 @@ export function RutaJefatura() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <nav
-        style={{
-          width: 220,
-          flexShrink: 0,
-          borderRight: '1px solid var(--borde-suave)',
-          padding: '1.5rem 1rem',
-          background: 'var(--superficie)',
-        }}
-      >
-        <div style={{ fontWeight: 700, marginBottom: 24 }}>ShiftSync</div>
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+    <div className="ss-jefatura">
+      <nav className="ss-jefatura-nav">
+        <div className="marca">ShiftSync</div>
+        <ul>
           {ITEMS_MENU.map((item) => (
-            <li key={item.href} style={{ marginBottom: 4 }}>
+            <li key={item.href}>
               {item.listo ? (
                 <NavLink
                   to={item.href}
                   style={({ isActive }) => ({
-                    display: 'block',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
                     padding: '8px 10px',
                     borderRadius: 'var(--radio-control)',
                     color: isActive ? 'var(--primario)' : 'var(--texto)',
@@ -118,7 +141,21 @@ export function RutaJefatura() {
                     fontSize: 14,
                   })}
                 >
-                  {item.etiqueta}
+                  <span style={{ flex: 1 }}>{item.etiqueta}</span>
+                  {item.href === '/jefe/panel' && pendientes !== null && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: 'var(--peligro)',
+                        background: 'var(--sev-alta-fondo)',
+                        borderRadius: 999,
+                        padding: '1px 8px',
+                      }}
+                    >
+                      {pendientes}
+                    </span>
+                  )}
                 </NavLink>
               ) : (
                 <div
@@ -137,8 +174,8 @@ export function RutaJefatura() {
             </li>
           ))}
         </ul>
-        <div style={{ marginTop: 32, borderTop: '1px solid var(--borde-suave)', paddingTop: 16 }}>
-          <div style={{ fontSize: 12, color: 'var(--texto-3)', marginBottom: 8, wordBreak: 'break-all' }}>
+        <div className="ss-jefatura-sesion">
+          <div style={{ fontSize: 12, color: 'var(--texto-3)', wordBreak: 'break-all' }}>
             {sesion.email}
           </div>
           <button
@@ -157,8 +194,8 @@ export function RutaJefatura() {
           </button>
         </div>
       </nav>
-      <div style={{ flex: 1, padding: '2rem', overflow: 'auto' }}>
-        <Outlet />
+      <div className="ss-jefatura-cuerpo">
+        <Outlet context={{ carga, datos, recargar } satisfies ContextoJefatura} />
       </div>
     </div>
   );

@@ -81,6 +81,8 @@ export interface SheetPerson {
   readonly joinedOn: DateKey | null;
   /** El orden nombre/apellido es dudoso y jefatura debería revisarlo. */
   readonly needsReview: boolean;
+  /** `manual` si jefatura ya eligió el nombre a mostrar. Si falta, es `auto`. */
+  readonly displayNameSource?: 'auto' | 'manual';
   /** Fila de la hoja (base 1), para poder señalarla en un aviso. */
   readonly row: number;
 }

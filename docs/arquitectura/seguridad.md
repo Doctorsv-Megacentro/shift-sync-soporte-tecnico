@@ -4,8 +4,8 @@ Quién ve qué, y qué riesgos aceptamos a sabiendas. Fuente: plan §5.6, §6.3,
 
 > **Estado: el acceso de jefatura está implementado y verificado** (RLS, `is_admin()`, el guardián
 > de sesión de `app/RutaJefatura.tsx`). `/api/hoja` está escrito pero depende de ADR-0005
-> (**Propuesto**) y no se ha probado contra una Google Sheet real. Los enlaces públicos llegan en la
-> Fase 3 (alcance mínimo) y se completan en la Fase 7.
+> (**Propuesto**) y no se ha probado contra una Google Sheet real. Los cinco alcances de enlaces
+> públicos están implementados y probados desde la Fase 7.
 
 ## Quién ve qué
 
@@ -47,8 +47,12 @@ Ver [ADR-0005](../adr/0005-acceso-a-google-sheet.md), que está en estado **Prop
   hash corto del mockup no sirve en producción.
 - **Vencimiento obligatorio:** 24 horas, 7 días o fin de mes.
 - **Revocables** en cualquier momento, con `last_opened_at` para saber si se usó.
-- Cada alcance (toda la operación, una semana con filtros, un día, una persona, un cambio) limita
-  qué devuelve `get_shared_view`. Una prueba por alcance.
+- Cada alcance limita qué devuelve `get_shared_view`: semana filtra siete fechas y las personas
+  calculadas por sede/rol; día y cambio filtran fecha. Persona fija la vista y oculta el buscador,
+  pero conserva datos de la operación para «Quién está» (la visibilidad interna no se restringe,
+  ADR-0006). Hay una prueba por alcance.
+- Parámetros inválidos responden igual que un slug inválido; no abren un camino para saltarse el
+  filtro ni revelan por qué el enlace no funciona.
 
 ## Datos personales
 

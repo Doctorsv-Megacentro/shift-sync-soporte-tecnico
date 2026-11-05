@@ -3,9 +3,9 @@
 Esquema, RLS y RPC viven en `supabase/migrations/`, **una migración por cambio**. Modelo completo:
 [../arquitectura/modelo-de-datos.md](../arquitectura/modelo-de-datos.md).
 
-> **Estado: primera migración aplicada y verificada** (`20261104172348_esquema_inicial.sql`), contra
-> un stack local (no hay proyecto de desarrollo ni de producción todavía — eso es trabajo de consola
-> de Ado, ver §13-3/§13-4 en `docs/progreso.md`).
+> **Estado: migraciones locales aplicadas** (esquema, horario, cambios, panel y Compartir completo:
+> `20261105015523_compartir_completo.sql`). No hay proyecto de desarrollo ni de
+> producción todavía — eso es trabajo de consola de Ado, ver §13-3/§13-4 en `docs/progreso.md`.
 
 ## El stack local de este repo
 
@@ -80,10 +80,10 @@ que decidir qué pasa con ellos **antes** de ejecutarlo: ver [volver-atras.md](v
 
 ```bash
 npx supabase db reset   # reconstruye la base desde cero con todas las migraciones
-npm run test:db          # 21 casos: RLS, is_admin, publish_import, activate_import
+npm run test:db          # RLS, importación, horario, cinco alcances, cambios y conflictos
 ```
 
-`get_shared_view` se agrega (y se prueba) en la migración de la Fase 3.
+`get_shared_view` se agrega en la Fase 3 y la migración de la Fase 7 implementa sus cinco alcances.
 
 ## Una lección de la primera migración
 

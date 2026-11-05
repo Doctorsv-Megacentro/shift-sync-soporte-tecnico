@@ -62,9 +62,9 @@ function agrupar(tokens: readonly string[]): string[][] {
  *
  * Con un refinamiento sobre el plan (ADR-0013, **Propuesto**): un grupo que
  * empieza por partícula es siempre un apellido, así que no puede ser el primer
- * nombre. Sin esto, `CRUZ DE LEON MARTA` son 3 grupos, el reparto por conteo
- * da 1 apellido + 2 nombres y sale «De Leon Marta Cruz» en lugar de
- * «Marta Cruz de Leon».
+ * nombre. Sin esto, `FUENTES DE LEON NURIA` son 3 grupos, el reparto por conteo
+ * da 1 apellido + 2 nombres y sale «De Leon Nuria Fuentes» en lugar de
+ * «Nuria Fuentes de Leon».
  */
 function repartir(grupos: readonly string[][]): { apellidos: string[][]; nombres: string[][] } {
   const n = grupos.length;
@@ -141,6 +141,26 @@ export function parsePersonName(rawName: string, anio: number): NombreInterpreta
   const { apellidos, nombres } = repartir(grupos);
   const ordenados = [...nombres.flat(), ...apellidos.flat()];
   return { ...resultado, displayName: formatear(ordenados), needsReview: false };
+}
+
+/**
+ * Las dos lecturas de un nombre cuyo orden es dudoso (`needsReview`): tal
+ * como viene («Nombre primero») y con el reparto apellido-nombre del plan
+ * («Apellido primero»). `null` si el orden no está en duda.
+ */
+export function alternativasDeNombre(
+  rawName: string,
+  anio: number,
+): { readonly nombrePrimero: string; readonly apellidoPrimero: string } | null {
+  const interpretado = parsePersonName(rawName, anio);
+  if (!interpretado.needsReview) return null;
+
+  const sinSufijo = rawName.replace(/\s+/g, ' ').trim().replace(RE_SUFIJO_FECHA, '').trim();
+  const { apellidos, nombres } = repartir(agrupar(trocear(sinSufijo)));
+  return {
+    nombrePrimero: interpretado.displayName,
+    apellidoPrimero: formatear([...nombres.flat(), ...apellidos.flat()]),
+  };
 }
 
 function trocear(texto: string): string[] {

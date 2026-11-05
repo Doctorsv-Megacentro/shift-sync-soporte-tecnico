@@ -104,9 +104,9 @@ describe('nombre a mostrar: siempre nombres + apellidos', () => {
 
   // Refinamiento del ADR-0013 sobre la regla del plan: un grupo que empieza
   // por partícula es un apellido, así que no puede ser el primer nombre.
-  // Sin esto, estos tres grupos darían «De Leon Marta Cruz».
+  // Sin esto, estos tres grupos darían «De Leon Nuria Fuentes».
   it('un apellido con partícula no se confunde con un nombre', () => {
-    expect(leer('CRUZ DE LEON MARTA').displayName).toBe('Marta Cruz de Leon');
+    expect(leer('FUENTES DE LEON NURIA').displayName).toBe('Nuria Fuentes de Leon');
     expect(leer('RAMOS DE LA PAZ ANA').displayName).toBe('Ana Ramos de la Paz');
   });
 });

@@ -1,0 +1,45 @@
+/* Diseño adaptable de Compartir: alcances, enlace creado y lista activa.
+   Ficha: docs/features/compartir.md. */
+.ss-share { max-width: 920px; display: grid; gap: 18px; }
+.ss-share h1 { margin: 4px 0; font: 700 30px/1.15 var(--fuente-titulo); }
+.ss-share h2 { margin: 0 0 12px; font-size: 16px; }
+.ss-share-kicker { margin: 0; color: var(--apagado); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.ss-share-help, .ss-share-empty { margin: 0; color: var(--texto-3); }
+.ss-share-card { padding: 20px; border: 1px solid var(--borde-suave); border-radius: var(--radio-tarjeta); background: var(--superficie); }
+.ss-share-scopes, .ss-share-expiry { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.ss-share-scopes button, .ss-share-expiry button, .ss-share-copy button, .ss-share-list button {
+  min-height: var(--tactil-min); padding: 8px 12px; border: 1px solid var(--borde); border-radius: var(--radio-control);
+  color: var(--texto); background: var(--superficie); cursor: pointer;
+}
+.ss-share-scopes button.is-selected, .ss-share-expiry button.is-selected {
+  border-color: var(--primario); color: var(--primario); background: var(--primario-suave);
+}
+.ss-share-field { display: grid; gap: 6px; margin: 12px 0; color: var(--texto-3); font-size: 12px; font-weight: 700; }
+.ss-share-field select, .ss-share-copy input {
+  min-height: var(--tactil-min); padding: 8px 10px; border: 1px solid var(--borde); border-radius: var(--radio-control);
+  color: var(--texto); background: var(--superficie); font: inherit;
+}
+.ss-share-row { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto; gap: 12px; align-items: end; }
+.ss-share-count { margin-bottom: 22px; color: var(--texto-3); font-size: 13px; }
+.ss-share-disabled { display: flex; align-items: center; gap: 7px; margin: 16px 0; color: var(--apagado); font-size: 13px; }
+.ss-share-disabled span { padding: 2px 6px; border-radius: 999px; background: var(--borde-suave); font-size: 10px; text-transform: uppercase; }
+.ss-share-primary { min-height: var(--tactil-min); padding: 9px 16px; border: 0; border-radius: var(--radio-control); color: #fff; background: var(--primario); font-weight: 700; cursor: pointer; }
+.ss-share-primary:disabled { opacity: .45; cursor: not-allowed; }
+.ss-share-error { color: var(--peligro); font-size: 13px; }
+.ss-share-result { border-color: var(--exito-texto); background: var(--exito-fondo); }
+.ss-share-copy { display: flex; gap: 8px; }
+.ss-share-copy input { flex: 1; min-width: 0; font-family: var(--fuente-mono); }
+.ss-share-result a { display: inline-block; margin-top: 12px; color: var(--primario); font-size: 13px; }
+.ss-share-list { display: grid; gap: 10px; }
+.ss-share-list article { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--borde-suave); }
+.ss-share-list article:first-child { border-top: 0; }
+.ss-share-list article div { display: grid; gap: 4px; min-width: 0; }
+.ss-share-list code { overflow: hidden; color: var(--texto-3); font-size: 12px; text-overflow: ellipsis; }
+.ss-share-list span { color: var(--texto-3); font-size: 12px; }
+.ss-share-list button { align-self: center; color: var(--peligro); }
+
+@media (max-width: 700px) {
+  .ss-share-row { grid-template-columns: 1fr; }
+  .ss-share-count { margin-bottom: 0; }
+  .ss-share-copy, .ss-share-list article { flex-direction: column; }
+}

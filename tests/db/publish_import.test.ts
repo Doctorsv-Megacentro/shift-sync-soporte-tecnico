@@ -5,7 +5,7 @@
  * Corre contra el stack local de Supabase (`npm run test:db`).
  */
 
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { clienteServicio, crearUsuarioAutenticado } from './helpers.ts';
 
 const usuariosDePrueba: string[] = [];
@@ -24,6 +24,15 @@ async function admin() {
   usuariosDePrueba.push(u.email);
   return u.cliente;
 }
+
+beforeEach(async () => {
+  // Este archivo se puede ejecutar varias veces contra el mismo stack. La
+  // prueba del nombre manual no debe contaminar la siguiente corrida.
+  await clienteServicio()
+    .from('people')
+    .update({ display_name: 'Ana Lucia Rosales', display_name_source: 'auto' })
+    .eq('key', 'ANA LUCIA ROSALES');
+});
 
 // Payload con la misma forma que arma src/data/imports.ts a partir de un
 // ParsedWorkbook. Nombres ficticios (ADR-0011).

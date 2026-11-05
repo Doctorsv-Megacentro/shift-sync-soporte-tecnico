@@ -2,8 +2,7 @@
 
 **Para jefatura.** Es el procedimiento mensual, y el que más se va a repetir.
 
-> **Estado: pendiente.** La pantalla Fuente de datos llega en la **Fase 2**. Este runbook se
-> completa entonces con capturas del producto real.
+> **Estado: vigente para Excel.** Google Sheet sigue en «Próximamente» (ADR-0005 **Propuesto**).
 
 ## Cuándo
 
@@ -13,9 +12,9 @@ Cuando coordinación publica el horario del mes nuevo, y cada vez que lo ajusta 
 
 1. Entrar en **Fuente de datos** (`/jefe/fuente`) con la cuenta de Google autorizada.
 2. Elegir el origen:
-   - **Google Sheet:** pegar el enlace o el ID. La pantalla interpreta el ID y el `gid` en vivo.
-     Pulsar «Revisar ahora».
-   - **Excel:** arrastrar el `.xlsx` o elegirlo. Solo `.xlsx`.
+   - **Excel (camino actual):** arrastrar el `.xlsx` o elegirlo. Solo `.xlsx`.
+   - **Google Sheet:** la pestaña está visible y marcada «Próximamente» hasta resolver el
+     bloqueo 1 de `docs/progreso.md`. No pegar un enlace esperando que publique.
 3. Elegir la **pestaña** (el mes). Por defecto se propone la del `gid` del enlace si es un mes; si
    no, el mes en curso. **Las pestañas ocultas se listan pero no se seleccionan solas.**
 4. Leer el **resumen de lectura**:

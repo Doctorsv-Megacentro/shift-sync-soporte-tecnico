@@ -36,7 +36,7 @@ function plantilla(): ParsedMonth {
       ['CC N1', 'ALVAREZ PEDRO', '06:00-15:00', '06:00-15:00', '06:00-15:00'],
       ['CC N2', 'ZAMORA BEATRIZ', 'Libre', 'Libre', 'Libre'],
       ['QA', 'GOMEZ JOSE ANTONIO', 'Vacaciones', 'Vacaciones', 'Vacaciones'],
-      ['SUP MEGA', 'CRUZ DE LEON MARTA', '21:00-06:00', '21:00-06:00', 'Libre'],
+      ['SUP MEGA', 'FUENTES DE LEON NURIA', '21:00-06:00', '21:00-06:00', 'Libre'],
     ],
   }]);
   const mes = parseWorkbook(libro).months[0];
@@ -125,7 +125,7 @@ describe('quienEsta: toda la operación', () => {
       'Pedro Alvarez',        // 06:00
       'Sofia Elena Molina',   // 06:00
       'Carlos Ramos',         // 14:00
-      'Marta Cruz de Leon',   // 21:00
+      'Nuria Fuentes de Leon',   // 21:00
     ]);
   });
 
@@ -154,7 +154,7 @@ describe('buscarPersonas', () => {
     expect(buscarPersonas(mes, 'jose').map((p) => p.displayName)).toEqual(['Jose Antonio Gomez']);
     expect(buscarPersonas(mes, 'ROSALES').map((p) => p.displayName)).toEqual(['Ana Lucia Rosales']);
     expect(buscarPersonas(mes, 'lucia').map((p) => p.displayName)).toEqual(['Ana Lucia Rosales']);
-    expect(buscarPersonas(mes, 'de leon').map((p) => p.displayName)).toEqual(['Marta Cruz de Leon']);
+    expect(buscarPersonas(mes, 'de leon').map((p) => p.displayName)).toEqual(['Nuria Fuentes de Leon']);
   });
 
   it('encuentra por un fragmento en medio de la palabra', () => {
@@ -188,7 +188,7 @@ describe('resumirSemana', () => {
   });
 
   it('un turno que cruza medianoche cuenta sus horas reales', () => {
-    const r = resumirSemana(indice, 'CRUZ DE LEON MARTA'.split(' ').sort().join(' '), DIAS);
+    const r = resumirSemana(indice, 'FUENTES DE LEON NURIA'.split(' ').sort().join(' '), DIAS);
     expect(r.turnos).toBe(2);
     expect(r.minutos).toBe(2 * 9 * 60); // 21:00-06:00 son 9 h
   });

@@ -5,7 +5,8 @@
 filtros de nombre/sede/rol. Toca un nombre para ver la semana de esa persona. Toca una celda (o
 «Editar») para cambiar ese día: turno, libre o vacaciones, sede, apoyo, motivo y nota. El cambio se
 guarda como capa encima de la hoja (ADR-0003) y se puede deshacer desde el registro «Cambios · n».
-Compartir alcances distintos a «toda la operación» sigue en la Fase 7 (ADR-0016, actualizado).
+Los botones «Compartir» abren la pantalla de la Fase 7 con semana/filtros, persona o cambio
+precargados (ADR-0016, actualizado).
 
 **Dónde:** `/jefe/horario` · capturas `10`, `11`–`14`, `17` y `18`.
 
@@ -38,6 +39,7 @@ en la Fase 3.
 | `src/features/horario/PanelEdicion.tsx` | Panel «Cambiar un día» (plan §7.5) |
 | `src/features/horario/RegistroCambios.tsx` | Registro «Cambios de jefatura · n» y «Deshacer» |
 | `src/features/horario/horario.css` | Grid, columna de nombre fija, línea de tiempo 00–24 y la columna «Editar» de la vista Día |
+| `src/app/jefatura.css` | Menú lateral en escritorio; barra superior bajo 700 px para que el E2E de 390 px no tape la grilla |
 | `src/data/horario.ts` | `get_admin_schedule`, `guardarCambioDia` y `deshacerCambioDia` |
 | `src/data/meses.ts` | Reconstrucción jsonb → dominio, compartida con `sharedView.ts` (Fase 3) |
 | `src/domain/edicion.ts` | Horarios frecuentes, avisos de descanso y compañeros/apoyo |
@@ -67,7 +69,10 @@ esa reconstrucción de `sharedView.ts` a un módulo compartido para que `horario
   defecto (ADR-0016, punto 3).
 - **Vista Semana:** celda coloreada por categoría del turno (mañana/tarde/noche), con el punto y el
   borde punteado naranja si ese día tiene un cambio de jefatura vigente (`tieneCambio`, reutilizado
-  de `domain/overlay.ts`). Total de horas y turnos por persona con `resumirSemana` (Fase 1).
+  de `domain/overlay.ts`). Total de horas y turnos por persona con `resumirSemana` (Fase 1). En
+  390 px el menú de jefatura pasa a una barra superior (`src/app/jefatura.css`) para que la columna
+  de nombre fija no cubra las celdas ni «Editar»; la tabla sigue con scroll horizontal, como pide
+  el plan §7.8-3.
 - **Vista Día:** línea de tiempo 00–24 por persona. Un turno que cruza medianoche se recorta a la
   medianoche (`barraDeHoy`); la parte que viene de un turno de **ayer** que cruzó aparece como barra
   punteada desde las 00:00 (`barraDeAyer`), con el texto «hasta HH:MM (de ayer)». Quien solo tiene
@@ -87,12 +92,15 @@ esa reconstrucción de `sharedView.ts` a un módulo compartido para que `horario
   los valores **Propuestos** del bloqueo §2 de `docs/progreso.md`: el plan §7.5 ya los usa en esta
   pantalla. No están confirmados y no se marcan como Aceptados.
 - **Guardar y deshacer.** `save_day_override` revoca el vigente de esa persona y fecha e inserta el
-  nuevo en la misma transacción (el índice único no permite dos vigentes). `revoke_day_override` lo
+  nuevo en la misma transacción (el índice único no permite dos vigentes). Desde el panel, el mismo
+  cambio puede llevar `conflict_key` (la migración `20261104210000_panel_conflictos.sql` reemplaza
+  la función). Desde esta pantalla el campo va vacío. `revoke_day_override` lo
   usa tanto «Volver a lo de la hoja» como «Deshacer» del registro, y no falla si ya no hay nada que
   revocar. Tras guardar, un aviso verde con el texto literal del plan y la grilla vuelve a pedirse
   sin pasar por el esqueleto de carga, para no perder filtros ni grupos plegados.
-- **«Compartir» sigue deshabilitado** (cabecera, vista rápida y el del registro): Fase 7. El texto
-  de ayuda de la cabecera volvió al literal del mockup (ADR-0016, actualización de la Fase 5).
+- **Compartir (Fase 7):** cabecera → semana y filtros actuales; vista rápida → persona; aviso verde
+  y registro → cambio de esa persona y fecha. El texto de ayuda de la cabecera usa el literal del
+  mockup (ADR-0016).
 
 ## Pruebas
 
@@ -109,9 +117,10 @@ esa reconstrucción de `sharedView.ts` a un módulo compartido para que `horario
 - `tests/domain/edicion.test.ts` (15 casos): los horarios más frecuentes y el desempate alfabético,
   los tres avisos de descanso (ayer, mañana y turno largo) sin avisar cuando el descanso alcanza, y
   compañeros exactos frente a apoyo por solape, incluida una sede cambiada por un override.
-- `tests/db/cambiar_un_dia.test.ts` (8 casos): `anon` y un autenticado sin ser admin no pueden
+- `tests/db/cambiar_un_dia.test.ts` (11 casos): `anon` y un autenticado sin ser admin no pueden
   guardar ni revocar; un admin crea el cambio y `get_admin_schedule` lo muestra vigente; guardar
-  otra vez el mismo día revoca el anterior; deshacer lo quita y un segundo deshacer no falla.
+  otra vez el mismo día revoca el anterior; deshacer lo quita y un segundo deshacer no falla;
+  payloads sin horas, con motivo inválido o apoyo desconocido se rechazan.
 
 ### Bug real encontrado probando en el navegador
 
@@ -145,7 +154,8 @@ a lo de la hoja» seguía visible.
   celda queda con borde punteado y punto naranja; el registro lista el cambio (antes → ahora,
   motivo, «Jefatura · cuándo») y «Deshacer» lo quita de la lista y de la grilla; «Volver a lo de la
   hoja» restaura el valor original; «Editar» de la vista Día y «Editar {día}» de la vista rápida
-  abren el mismo panel. «Compartir» sigue deshabilitado. Sin errores en la consola.
+  abren el mismo panel. En esa prueba de Fase 5, «Compartir» seguía deshabilitado; la Fase 7 ya lo
+  conectó. Sin errores en la consola.
 
 ## Decisiones
 
@@ -163,7 +173,5 @@ ayuda de la cabecera también volvió a ser el literal.
 
 ## Pendiente / Próximamente
 
-- El diálogo completo de «Compartir» (cabecera, vista rápida, registro y «Compartir este cambio»):
-  Fase 7.
 - Comparación pixel a pixel contra las capturas 10–14, 17 y 18 (la pantalla es funcional y está
   probada con datos reales; no se revisó contra la captura real).

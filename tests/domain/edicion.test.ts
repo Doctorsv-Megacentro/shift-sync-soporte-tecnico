@@ -166,6 +166,7 @@ describe('companerosYApoyo', () => {
         reason: 'Apoyo a otra sede',
         note: null,
         supportPersonKey: null,
+        conflictKey: null,
         createdAt: '2026-11-01T00:00:00Z',
       },
     ];

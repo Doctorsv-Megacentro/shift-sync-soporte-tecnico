@@ -53,6 +53,12 @@ la vista rápida **ya abren** el panel y el registro. El texto de ayuda de la ca
 literal del mockup. **«Compartir»** (el de la cabecera, «Compartir su horario» de la vista rápida y
 el del registro) sigue deshabilitado hasta la Fase 7. Los puntos 2 y 3 no cambian.
 
+## Actualización — Fase 7 (2026-11-04)
+
+«Compartir» ya está habilitado: la cabecera lleva semana y filtros, la vista rápida lleva la
+persona, y el aviso/registro llevan persona y fecha del cambio. La creación y administración vive
+en `/jefe/compartir`, para no duplicar el formulario en cada panel. Los puntos 2 y 3 no cambian.
+
 ## Consecuencias
 
 - La Fase 5 reutilizó `get_admin_schedule` y `domain/overlay.ts` tal cual, y añadió
@@ -67,5 +73,5 @@ el del registro) sigue deshabilitado hasta la Fase 7. Los puntos 2 y 3 no cambia
 Probado a mano en el navegador con el fixture real: la vista Semana y Día muestran octubre y
 noviembre sin cortar una semana a la mitad, los grupos se pliegan y despliegan, los filtros de
 nombre/sede/rol funcionan. En la Fase 4, «Cambios», «Compartir» y «Editar» se veían pero no hacían
-nada. Desde la Fase 5, «Cambios» y «Editar» abren el panel y el registro; «Compartir» sigue sin
-hacer nada.
+nada. Desde la Fase 5, «Cambios» y «Editar» abren el panel y el registro; desde la Fase 7,
+«Compartir» abre el formulario con el alcance correspondiente.

@@ -118,6 +118,7 @@ describe('get_admin_schedule: datos', () => {
       key: 'HUGO CESAR PINEDA',
       rawName: 'PINEDA HUGO CESAR',
       displayName: 'Hugo Cesar Pineda',
+      displayNameSource: 'auto',
       joinedOn: null,
     });
   });

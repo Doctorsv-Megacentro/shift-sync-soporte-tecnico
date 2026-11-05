@@ -20,6 +20,8 @@ export interface DayOverride {
   readonly reason: string;
   readonly note: string | null;
   readonly supportPersonKey: string | null;
+  /** Clave del conflicto que este cambio resuelve, si nació en el panel. */
+  readonly conflictKey: string | null;
   readonly createdAt: DateKey;
 }
 

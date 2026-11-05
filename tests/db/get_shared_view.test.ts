@@ -62,16 +62,59 @@ async function publicarMesDePrueba(cliente: Awaited<ReturnType<typeof admin>>, m
   return importId as string;
 }
 
+async function publicarMesParaAlcance(
+  cliente: Awaited<ReturnType<typeof admin>>,
+  month: string,
+  sufijo: string,
+) {
+  const personaA = `ALBA ${sufijo}`;
+  const personaB = `BRUNO ${sufijo}`;
+  const dia1 = month;
+  const dia2 = `${month.slice(0, 8)}02`;
+  const dia8 = `${month.slice(0, 8)}08`;
+  const { error } = await cliente.rpc('publish_import', {
+    payload: {
+      source: 'excel',
+      source_label: 'alcances.xlsx',
+      sheet_gid: null,
+      content_hash: `hash-alcance-${sufijo}-${Date.now()}`,
+      summary: {},
+      warnings: [],
+      months: [
+        {
+          month,
+          people: [
+            { key: personaA, raw_name: personaA, display_name: `Alba ${sufijo}`, joined_on: null },
+            { key: personaB, raw_name: personaB, display_name: `Bruno ${sufijo}`, joined_on: null },
+          ],
+          entries: [
+            { person_key: personaA, date: dia1, department: 'MEGA N1', raw: '06:00-15:00', kind: 'work', start_min: 360, end_min: 900 },
+            { person_key: personaA, date: dia8, department: 'MEGA N1', raw: 'Libre', kind: 'off', start_min: null, end_min: null },
+            { person_key: personaB, date: dia2, department: 'MEGA N2', raw: '15:00-23:00', kind: 'work', start_min: 900, end_min: 1380 },
+          ],
+        },
+      ],
+    },
+  });
+  if (error) throw error;
+  return { personaA, personaB, dia1, dia2, dia8 };
+}
+
 async function crearEnlace(
   cliente: Awaited<ReturnType<typeof admin>>,
-  opts: { expiresAt: string; revokedAt?: string | null },
+  opts: {
+    expiresAt: string;
+    revokedAt?: string | null;
+    scope?: 'operacion' | 'semana' | 'dia' | 'persona' | 'cambio';
+    params?: Record<string, unknown>;
+  },
 ) {
   const slug = `prueba-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const { data: quienCrea } = await cliente.auth.getUser();
   const { error } = await cliente.from('share_links').insert({
     slug,
-    scope: 'operacion',
-    params: {},
+    scope: opts.scope ?? 'operacion',
+    params: opts.params ?? {},
     expires_at: opts.expiresAt,
     revoked_at: opts.revokedAt ?? null,
     created_by: quienCrea.user?.id,
@@ -170,23 +213,6 @@ describe('get_shared_view: un enlace vigente', () => {
     expect(fila?.['last_opened_at']).not.toBeNull();
   });
 
-  it('un alcance que no sea «operación» da ALCANCE_NO_DISPONIBLE (llega en la Fase 7)', async () => {
-    const cliente = await admin();
-    const slug = `prueba-${Date.now()}`;
-    const { data: quienCrea } = await cliente.auth.getUser();
-    const { error: errorInsert } = await cliente.from('share_links').insert({
-      slug,
-      scope: 'dia',
-      params: { date: '2026-11-02' },
-      expires_at: '2030-01-01T00:00:00Z',
-      created_by: quienCrea.user?.id,
-    });
-    expect(errorInsert).toBeNull();
-
-    const { data } = await clienteAnon().rpc('get_shared_view', { p_slug: slug });
-    expect(data).toEqual({ error: 'ALCANCE_NO_DISPONIBLE' });
-  });
-
   // Encontrado probando con la hoja real anonimizada: un solo import puede
   // cubrir dos meses calendario a la vez (p. ej. octubre y noviembre en una
   // misma carga), y antes filtraba solo por import_id, así que cada bloque
@@ -231,6 +257,74 @@ describe('get_shared_view: un enlace vigente', () => {
     const marzo = vista.months.find((m) => m.month === '2026-03-01');
     expect(febrero?.entries).toEqual([{ date: '2026-02-01', department: 'MEGA N1', raw: '06:00-15:00', kind: 'work', startMin: 360, endMin: 900, personKey: 'SOFIA ELENA MOLINA' }]);
     expect(marzo?.entries).toEqual([{ date: '2026-03-01', department: 'MEGA N2', raw: '15:00-23:00', kind: 'work', startMin: 900, endMin: 1380, personKey: 'SOFIA ELENA MOLINA' }]);
+  });
+});
+
+describe('get_shared_view: alcances de la Fase 7', () => {
+  it('semana limita siete días y las personas de los filtros', async () => {
+    const cliente = await admin();
+    const datos = await publicarMesParaAlcance(cliente, '2027-01-01', 'ENERO');
+    const slug = await crearEnlace(cliente, {
+      expiresAt: '2030-01-01T00:00:00Z',
+      scope: 'semana',
+      params: { start_date: '2026-12-28', person_keys: [datos.personaA], site: 'Megacentro', role: 'N1' },
+    });
+
+    const { data } = await clienteAnon().rpc('get_shared_view', { p_slug: slug });
+    const vista = data as { params: Record<string, unknown>; months: { entries: { personKey: string; date: string }[] }[] };
+    expect(vista.params).toMatchObject({ start_date: '2026-12-28', site: 'Megacentro', role: 'N1' });
+    expect(vista.months.flatMap((m) => m.entries)).toEqual([
+      expect.objectContaining({ personKey: datos.personaA, date: datos.dia1 }),
+    ]);
+  });
+
+  it('día devuelve únicamente la fecha elegida', async () => {
+    const cliente = await admin();
+    const datos = await publicarMesParaAlcance(cliente, '2027-02-01', 'FEBRERO');
+    const slug = await crearEnlace(cliente, {
+      expiresAt: '2030-01-01T00:00:00Z',
+      scope: 'dia',
+      params: { date: datos.dia2 },
+    });
+
+    const { data } = await clienteAnon().rpc('get_shared_view', { p_slug: slug });
+    const vista = data as { months: { dates: string[]; entries: { personKey: string; date: string }[] }[] };
+    expect(vista.months.flatMap((m) => m.dates)).toEqual([datos.dia2]);
+    expect(vista.months.flatMap((m) => m.entries)).toEqual([
+      expect.objectContaining({ personKey: datos.personaB, date: datos.dia2 }),
+    ]);
+  });
+
+  it('persona conserva la operación para «Quién está» y fija la persona en params', async () => {
+    const cliente = await admin();
+    const datos = await publicarMesParaAlcance(cliente, '2027-03-01', 'MARZO');
+    const slug = await crearEnlace(cliente, {
+      expiresAt: '2030-01-01T00:00:00Z',
+      scope: 'persona',
+      params: { person_key: datos.personaA },
+    });
+
+    const { data } = await clienteAnon().rpc('get_shared_view', { p_slug: slug });
+    const vista = data as { params: { person_key: string }; months: { entries: { personKey: string }[] }[] };
+    expect(vista.params.person_key).toBe(datos.personaA);
+    const personasVisibles = new Set(vista.months.flatMap((m) => m.entries.map((e) => e.personKey)));
+    expect(personasVisibles.has(datos.personaA)).toBe(true);
+    expect(personasVisibles.has(datos.personaB)).toBe(true);
+  });
+
+  it('cambio fija persona y fecha y solo devuelve ese día', async () => {
+    const cliente = await admin();
+    const datos = await publicarMesParaAlcance(cliente, '2027-04-01', 'ABRIL');
+    const slug = await crearEnlace(cliente, {
+      expiresAt: '2030-01-01T00:00:00Z',
+      scope: 'cambio',
+      params: { person_key: datos.personaA, date: datos.dia1 },
+    });
+
+    const { data } = await clienteAnon().rpc('get_shared_view', { p_slug: slug });
+    const vista = data as { params: { person_key: string; date: string }; months: { dates: string[] }[] };
+    expect(vista.params).toEqual({ person_key: datos.personaA, date: datos.dia1 });
+    expect(vista.months.flatMap((m) => m.dates)).toEqual([datos.dia1]);
   });
 });
 

@@ -6,6 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
 import { leerLibroExcel, ExcelDemasiadoGrande, ExcelIlegible } from '@/data/excel.ts';
 import { hashContenido } from '@/data/content-hash.ts';
 import {
@@ -318,7 +319,7 @@ export function Fuente() {
       {estado.tipo === 'publicando' && <p style={{ color: 'var(--texto-3)' }}>Publicando…</p>}
 
       {estado.tipo === 'publicado' && (
-        <p
+        <div
           role="status"
           style={{
             background: 'var(--exito-fondo)',
@@ -327,8 +328,13 @@ export function Fuente() {
             padding: '10px 12px',
           }}
         >
-          Versión publicada.
-        </p>
+          <p style={{ margin: '0 0 10px' }}>Versión publicada.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <Link to="/jefe/panel" style={estiloEnlaceAccion}>Revisar conflictos</Link>
+            <Link to="/jefe/horario" style={estiloEnlaceAccion}>Ver horario completo</Link>
+            <Link to="/jefe/compartir?scope=operacion" style={estiloEnlaceAccion}>Ver como empleado</Link>
+          </div>
+        </div>
       )}
 
       <section style={{ marginTop: 24 }}>
@@ -359,6 +365,19 @@ const estiloEnlace: CSSProperties = {
   cursor: 'pointer',
   fontSize: 13,
   padding: 0,
+};
+
+const estiloEnlaceAccion: CSSProperties = {
+  minHeight: 'var(--tactil-min)',
+  padding: '8px 12px',
+  border: '1px solid var(--borde)',
+  borderRadius: 'var(--radio-control)',
+  color: 'var(--texto)',
+  background: 'var(--superficie)',
+  textDecoration: 'none',
+  display: 'inline-flex',
+  alignItems: 'center',
+  fontSize: 13,
 };
 
 const estiloPestana: CSSProperties = {

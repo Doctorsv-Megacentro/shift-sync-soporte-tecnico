@@ -3,8 +3,8 @@
 Las 16 reglas del panel de jefatura. Fuente: plan §7.3. Decisión:
 [ADR-0007](../adr/0007-conflictos-como-funciones-puras.md).
 
-> **Estado: especificado, pendiente de implementar** en la **Fase 6**. Un archivo por regla en
-> `src/domain/conflicts/`, con sus pruebas. Los parámetros viven en `src/domain/config.ts`.
+> **Estado: implementado** en la **Fase 6**. Un archivo por regla en `src/domain/conflicts/`, con
+> sus pruebas. Los parámetros viven en `src/domain/config.ts`. Ficha: [../features/panel.md](../features/panel.md).
 >
 > ⚠️ **Los umbrales están pendientes de confirmar** por Ado: ver `../progreso.md`, bloqueo 2.
 
@@ -81,7 +81,9 @@ Con el libro real (prueba local, se salta si no hay `referencias/privado/`), el 
 - un nombre con coma;
 - «Adminsitrador de Redes»;
 - 12 cambios de departamento y 1 salida contra octubre;
-- 17 descansos de 8–9 h.
+- descansos justos de noviembre: la fórmula da **12** (8 h o más y menos de 9 h, entre días
+  seguidos trabajados). El «17» del plan no aparece en esta hoja; hay además 1 descanso de 9 h
+  exactas, que no entra en la regla.
 
 ## Métricas de referencia (lunes 2 de noviembre)
 

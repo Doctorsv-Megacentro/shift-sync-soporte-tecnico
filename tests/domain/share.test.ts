@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { calcularVencimiento, enlaceVigente, generarSlug } from '../../src/domain/share.ts';
+import {
+  calcularVencimiento,
+  enlaceVigente,
+  generarSlug,
+  restriccionesDeEnlace,
+} from '../../src/domain/share.ts';
 
 describe('generarSlug', () => {
   it('empieza con el prefijo y un guion', () => {
@@ -61,5 +66,39 @@ describe('enlaceVigente', () => {
 
   it('revocado, aunque no haya vencido', () => {
     expect(enlaceVigente(futuro, '2026-11-01T00:00:00', ahora)).toBe(false);
+  });
+});
+
+describe('restriccionesDeEnlace', () => {
+  it('una semana limita sus siete fechas pero conserva búsqueda', () => {
+    expect(restriccionesDeEnlace('semana', { start_date: '2026-11-02' })).toMatchObject({
+      startDate: '2026-11-02',
+      endDate: '2026-11-08',
+      fixedDate: null,
+      fixedPersonKey: null,
+      showSearch: true,
+    });
+  });
+
+  it('una persona queda fija sin ocultar quién está', () => {
+    expect(restriccionesDeEnlace('persona', { person_key: 'PERSONA FICTICIA' })).toMatchObject({
+      fixedPersonKey: 'PERSONA FICTICIA',
+      fixedDate: null,
+      showSearch: false,
+      highlightChange: false,
+    });
+  });
+
+  it('un cambio fija persona y fecha y pide destacarlo', () => {
+    expect(
+      restriccionesDeEnlace('cambio', { person_key: 'PERSONA FICTICIA', date: '2026-11-05' }),
+    ).toMatchObject({
+      fixedPersonKey: 'PERSONA FICTICIA',
+      fixedDate: '2026-11-05',
+      startDate: '2026-11-05',
+      endDate: '2026-11-05',
+      showSearch: false,
+      highlightChange: true,
+    });
   });
 });

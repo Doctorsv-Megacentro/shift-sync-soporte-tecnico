@@ -27,6 +27,7 @@ function override(parcial: Partial<DayOverride> & Pick<DayOverride, 'personKey' 
     reason: 'Cambio de turno',
     note: null,
     supportPersonKey: null,
+    conflictKey: null,
     createdAt: '2026-11-01',
     ...parcial,
   };

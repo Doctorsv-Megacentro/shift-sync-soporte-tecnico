@@ -10,12 +10,57 @@ Estado del MVP de ShiftSync v2. Se actualiza en **cada** cambio (Definición de 
 | 2 | Base de datos, acceso de jefatura y Fuente de datos | **Hecho** | Opus. Esquema + RLS + RPC probados contra Supabase local; falta proyecto en la nube |
 | 3 | Vista empleado + enlace de la operación | **Hecho** | Sonnet. **Primer entregable usable** |
 | 4 | Horario completo | **Hecho** | Sonnet. La edición de un día se cerró en la Fase 5 (ADR-0016) |
-| 5 | Cambiar un día + registro de cambios | **Hecho** | Sonnet. «Compartir» sigue para la Fase 7 |
-| 6 | Panel y conflictos | **Siguiente** | Opus |
-| 7 | Compartir completo | Sin empezar | Sonnet |
-| 8 | Producción | Sin empezar | Opus, en sesión nueva (revisión independiente) |
+| 5 | Cambiar un día + registro de cambios | **Hecho** | Sonnet. Los CTA de compartir se conectaron en la Fase 7 |
+| 6 | Panel y conflictos | **Hecho** | Opus. 16 reglas; el «17» de descansos justos de noviembre da 12 con la fórmula escrita |
+| 7 | Compartir completo | **Hecho** | Sonnet. Cinco alcances, tres vencimientos, activos y revocación |
+| 8 | Producción | **Hecho en local, bloqueado en nube** | E2E verde; sin Supabase cloud ni preview |
 
 ## Último cambio
+
+**4 nov 2026 · Fase 8 hecha en local, bloqueada en la nube.**
+
+E2E Playwright del flujo de aceptación (publicar, enlace de operación, consultar, cambiar,
+deshacer, revocar) en escritorio y móvil de 390 px, contra Supabase local y el fixture
+anonimizado. En 390 px el menú de jefatura pasaba por encima de la grilla; ahora es una barra
+superior. Runbooks de pausa (7 días / restauración 90 días), respaldo (`pg_dump` de roles,
+esquema y datos; el CLI no vuelca `auth`) y despliegue. El corte de v1 queda preparado en
+[ADR-0017](adr/0017-corte-escalonado-de-v1.md) (**Propuesto**) y **no se ejecuta**.
+
+`npm run e2e` pasó 2/2 (escritorio y móvil, ~10 s cada uno) el 4 nov 2026. `npm run check`
+(251 unitarias), `docs:check`, `build`, `test:db` (56) y `test:local` (13) también en verde.
+
+Revisión independiente (sesión aparte, solo lectura): sin hallazgos altos de RLS ni
+`service_role` en el cliente. Se corrigieron en este cierre el ejemplo de apellido con partícula (ahora
+`FUENTES DE LEON NURIA`), la ficha de `/demo` y los runbooks de carga y OAuth.
+Quedan como seguimiento, no como gate: prueba de `/api/hoja`, restringir escrituras admin a
+RPC, retirar `/demo`, y correr `test:db`/E2E en CI cuando exista un proyecto de desarrollo.
+
+Por decisión de esta fase **no** se crearon proyectos Supabase en la nube ni un preview de
+Vercel. El proyecto Vercel existente con nombre parecido apunta a otro repositorio y no se
+reutiliza. Sin base remota no hay promoción a producción, no se etiqueta `v1.0.0` y v1 sigue
+en línea.
+
+**4 nov 2026 · Fase 7 cerrada: Compartir completo.**
+
+`/jefe/compartir` crea enlaces de operación, semana con filtros, día, persona o cambio; ofrece 24
+horas, 7 días o fin de mes, copia con fallback, vista previa y revocación. `get_shared_view` filtra
+fechas y personas antes de responder. La vista pública fija persona/fecha y oculta búsqueda según
+el alcance. Horario, vista rápida, aviso y registro llevan el contexto al formulario.
+
+La misma migración endurece `save_day_override`, y el panel ya no permite «Asignar cobertura» sin
+opciones. Ficha: [features/compartir.md](features/compartir.md). La revisión pixel a pixel de las
+capturas 15–16 queda pendiente porque las referencias no estaban disponibles.
+
+**4 nov 2026 · Fase 6 cerrada: panel y conflictos.**
+
+`/jefe/panel` calcula las 16 reglas sobre el horario efectivo y deja resolverlas sin tocar la hoja:
+asignar cobertura escribe un `day_override` con `conflict_key`, y «Aceptar como está» una fila en
+`conflict_acks`. El menú muestra cuántos quedan pendientes. Ficha: [features/panel.md](features/panel.md).
+Los umbrales siguen **Propuestos** (bloqueo §2); no hay ADR nuevo.
+
+El «17» de descansos justos de noviembre no se reproduce: la fórmula (8 h o más y menos de 9 h,
+entre días seguidos trabajados) da **12** en esa hoja. El resto de cifras de control del plan §7.3
+sí cuadra, incluido el lunes 2 de noviembre.
 
 **4 nov 2026 · Fase 5 cerrada: cambiar un día y registro de cambios.**
 
@@ -238,11 +283,10 @@ El stack local de Supabase y el servidor de desarrollo se apagaron al terminar
 
 ## Siguiente paso
 
-**Fase 6 — Panel y conflictos** (Opus). `/jefe/panel` (plan §7.3 y §6, capturas 08–09): métricas del
-día, cobertura y las 16 reglas de `docs/datos/reglas-conflictos.md`. Resolver un conflicto de
-cobertura crea un `day_override` (la Fase 5 ya dejó `save_day_override`). Los umbrales del bloqueo
-§2 siguen **Propuestos**, así que las reglas que dependen de ellos se implementan con esos valores
-y el ADR que las fije no pasa de «Propuesto».
+**Aprovisionar la nube** cuando jefatura lo autorice: dos proyectos Supabase (desarrollo y
+producción), un proyecto Vercel **nuevo** enlazado a este repo, primer respaldo con prueba de
+restauración, preview y después validación con jefatura antes de cortar v1 (ADR-0017). Los
+umbrales del bloqueo §2 siguen **Propuestos**.
 
 Pendiente de sesiones anteriores, para retomar cuando toque:
 
@@ -266,8 +310,8 @@ bloquea técnicamente, pero son desviaciones del plan que piden su ratificación
   real para probar la regla `valor-no-reconocido` hasta que aparezca uno.
 - No existe la pestaña `CONTACTOS` en este archivo. Ignorarla sigue siendo correcto por defensa.
 - Septiembre tiene 95 personas y 24 departamentos; octubre, 49 celdas `Vacaciones`.
-- **ADR-0013** (Propuesto): un apellido con partícula (`CRUZ DE LEON MARTA`) rompía la regla de
-  reparto del plan §5.5 y daba «De Leon Marta Cruz». Corregido y probado; falta el visto bueno.
+- **ADR-0013** (Propuesto): un apellido con partícula (`FUENTES DE LEON NURIA`) rompía la regla de
+  reparto del plan §5.5 y daba «De Leon Nuria Fuentes». Corregido y probado; falta el visto bueno.
 
 ## Bloqueos / preguntas abiertas
 
@@ -296,14 +340,15 @@ Valores propuestos, pendientes de confirmar. Vivirán en `src/domain/config.ts`:
 | Hueco mínimo de cobertura | 60 min |
 | Sedes que exigen supervisor en turno | Megacentro y Tuscania. ¿Atento, Santa Ana y San Miguel con su coordinación? |
 
-Afecta a la Fase 6. Se puede implementar con los valores propuestos y ajustarlos después, porque
-son parámetros, no estructura. Ver [datos/reglas-conflictos.md](datos/reglas-conflictos.md).
+La Fase 6 ya los usa tal cual, en `src/domain/config.ts`. Se pueden ajustar después porque son
+parámetros, no estructura. Ver [datos/reglas-conflictos.md](datos/reglas-conflictos.md).
 
 ### 3. Corte con v1
 
-El repo nuevo ya está decidido y en uso ([ADR-0001](adr/0001-repo-nuevo.md), Aceptado). Queda
-pendiente: ¿cuándo se apaga `shiftsync-rho-neon.vercel.app` y qué pasa con los enlaces `?s=<uuid>`
-ya repartidos, redirigir o retirar? Afecta a la Fase 8.
+El repo nuevo ya está decidido y en uso ([ADR-0001](adr/0001-repo-nuevo.md), Aceptado). El
+procedimiento de corte está en [ADR-0017](adr/0017-corte-escalonado-de-v1.md) (**Propuesto**): aviso
+en v1, transición y retiro de los `?s=<uuid>`, sin convertirlos a slugs de v2. Falta acordar la
+URL estable de v2 y cuánto dura la transición. No se apaga v1 todavía.
 
 ### 4. Correos con acceso de jefatura
 

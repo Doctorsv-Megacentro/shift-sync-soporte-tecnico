@@ -141,6 +141,36 @@ describe('save_day_override: datos', () => {
     expect(delDia).toHaveLength(1);
     expect(delDia[0]?.kind).toBe('vacation');
   });
+
+  it('rechaza un turno sin horas o con un motivo fuera del catálogo', async () => {
+    const cliente = await admin();
+    await publicarPersona(cliente, 'MARIO ESTEBAN REYES', 'REYES MARIO ESTEBAN', 'Mario Esteban Reyes', '2026-11-06', `hash-ed5-${Date.now()}`);
+
+    const sinHoras = await cliente.rpc('save_day_override', {
+      payload: { person_key: 'MARIO ESTEBAN REYES', date: '2026-11-06', kind: 'work', reason: 'Permiso' },
+    });
+    expect(sinHoras.error?.message).toContain('CAMBIO_INVALIDO');
+
+    const motivoInvalido = await cliente.rpc('save_day_override', {
+      payload: { person_key: 'MARIO ESTEBAN REYES', date: '2026-11-06', kind: 'off', reason: 'Sin validar' },
+    });
+    expect(motivoInvalido.error?.message).toContain('CAMBIO_INVALIDO');
+  });
+
+  it('rechaza una persona de apoyo desconocida', async () => {
+    const cliente = await admin();
+    await publicarPersona(cliente, 'LUCIA BEATRIZ VEGA', 'VEGA LUCIA BEATRIZ', 'Lucia Beatriz Vega', '2026-11-07', `hash-ed6-${Date.now()}`);
+    const { error } = await cliente.rpc('save_day_override', {
+      payload: {
+        person_key: 'LUCIA BEATRIZ VEGA',
+        support_person_key: 'NO EXISTE',
+        date: '2026-11-07',
+        kind: 'off',
+        reason: 'Permiso',
+      },
+    });
+    expect(error?.message).toContain('APOYO_DESCONOCIDO');
+  });
 });
 
 describe('revoke_day_override', () => {
@@ -166,6 +196,12 @@ describe('revoke_day_override', () => {
 
   it('anon no puede llamarla', async () => {
     const { error } = await clienteAnon().rpc('revoke_day_override', { p_person_key: 'X', p_date: '2026-11-05' });
+    expect(error).not.toBeNull();
+  });
+
+  it('un autenticado que no es admin no puede llamarla', async () => {
+    const cliente = await noAdmin();
+    const { error } = await cliente.rpc('revoke_day_override', { p_person_key: 'X', p_date: '2026-11-05' });
     expect(error).not.toBeNull();
   });
 });

@@ -75,8 +75,8 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   de ayer que cruza, como barra punteada).
 - Pantalla **Horario completo** en `/jefe/horario` (`src/features/horario/`): vista Semana (grupos
   por departamento plegables, grid con nombre fijo) y vista Día (línea de tiempo), filtros, y panel de
-  vista rápida de una persona. Solo lectura en esta fase: «Cambios», «Compartir» y «Editar» quedan
-  deshabilitados hasta las Fases 5 y 7 (ADR-0016 **Propuesto**; ficha: docs/features/horario.md).
+  vista rápida de una persona. Las Fases 5 y 7 habilitaron después edición, registro y Compartir
+  (ADR-0016 **Propuesto**; ficha: docs/features/horario.md).
 - `src/data/meses.ts`: la reconstrucción de jsonb a tipos de dominio, compartida entre la vista de
   empleado y el horario completo (antes vivía solo en `data/sharedView.ts`).
 - `domain/presence.ts` gana `combinarMeses` (antes vivía solo en `VistaPersona.tsx`), para que el
@@ -86,10 +86,23 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   nota. El cambio se guarda como capa sobre la hoja y se puede deshacer desde «Cambios · n» o con
   «Volver a lo de la hoja» (ficha: docs/features/horario.md; ADR-0016 actualizado).
 
+- **Panel y conflictos** en `/jefe/panel`: métricas del día, cobertura y las 16 reglas sobre el
+  horario efectivo. Asignar cobertura guarda un cambio de un día; «Aceptar como está» no toca la
+  hoja. El menú muestra cuántos quedan pendientes (ficha: docs/features/panel.md).
+- **Compartir completo** en `/jefe/compartir`: enlaces para operación, semana con filtros, día,
+  persona o cambio; vencimientos de 24 horas, 7 días o fin de mes; copia, vista previa, activos y
+  revocación. Horario, vista rápida, aviso de cambio y registro abren el alcance correspondiente
+  (ficha: docs/features/compartir.md).
+- Flujo E2E de producción (`npm run e2e`) en escritorio y móvil de 390 px: publicar, crear el
+  enlace de la operación, consultar, cambiar un día, deshacer y revocar (plan Fase 8).
+- Runbooks de pausa de Supabase Free, respaldo con `pg_dump` y corte preparado de v1 a v2
+  ([ADR-0017](docs/adr/0017-corte-escalonado-de-v1.md), **Propuesto**). No hay todavía proyectos
+  en la nube ni URL estable; no se etiqueta `v1.0.0` ni se apaga v1.
+
 ### Corregido
 
-- Un apellido con partícula (`CRUZ DE LEON MARTA`) rompía la regla de reparto nombre/apellido del
-  plan §5.5 y producía «De Leon Marta Cruz» en vez de «Marta Cruz de Leon» (ADR-0013 **Propuesto**).
+- Un apellido con partícula (`FUENTES DE LEON NURIA`) rompía la regla de reparto nombre/apellido del
+  plan §5.5 y producía «De Leon Nuria Fuentes» en vez de «Nuria Fuentes de Leon» (ADR-0013 **Propuesto**).
 - `get_shared_view` devolvía las entradas de un import duplicadas en cada mes que cubre, cuando un
   solo import abarca más de un mes calendario (el caso real: octubre y noviembre en el mismo
   archivo). Encontrado probando en el navegador con el fixture real: «Toda la operación» mostraba el
@@ -102,6 +115,12 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   Corregido usando el tono de **texto**, más oscuro.
 - Al reabrir un día ya cambiado, el panel no recuperaba el motivo ni la nota, así que «Guardar
   cambio» pedía elegir el motivo otra vez. Ahora precarga motivo, nota y apoyo, como el mockup.
+- `save_day_override` aceptaba turnos sin horas, motivos libres y apoyos inexistentes. La base ahora
+  valida el payload además de la interfaz.
+- «Asignar cobertura» podía aparentar éxito cuando no había ninguna persona disponible. Ahora la
+  acción permanece deshabilitada hasta que exista y se elija una opción.
+- En 390 px el menú lateral de jefatura tapaba la grilla y el botón «Editar». Ahora pasa a una
+  barra superior bajo 700 px, y la columna de nombre fija deja de cubrir las celdas.
 
 ### Seguridad
 

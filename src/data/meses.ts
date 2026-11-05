@@ -14,6 +14,7 @@ export interface PersonaCruda {
   readonly rawName: string;
   readonly displayName: string;
   readonly joinedOn: string | null;
+  readonly displayNameSource?: 'auto' | 'manual';
 }
 
 export interface EntradaCruda {
@@ -43,6 +44,7 @@ export interface OverrideCrudo {
   readonly reason: string;
   readonly note: string | null;
   readonly supportPersonKey: string | null;
+  readonly conflictKey?: string | null;
   readonly createdAt: string;
 }
 
@@ -65,6 +67,7 @@ export function reconstruirMes(mes: MesCrudo): ParsedMonth {
       area: info.area,
       joinedOn: p.joinedOn,
       needsReview: false,
+      displayNameSource: p.displayNameSource === 'manual' ? 'manual' : 'auto',
       row: i,
     };
   });
@@ -104,6 +107,7 @@ export function reconstruirOverride(o: OverrideCrudo): DayOverride {
     reason: o.reason,
     note: o.note,
     supportPersonKey: o.supportPersonKey,
+    conflictKey: o.conflictKey ?? null,
     createdAt: o.createdAt,
   };
 }

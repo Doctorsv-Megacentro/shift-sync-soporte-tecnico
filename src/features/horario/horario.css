@@ -2,7 +2,8 @@
  * Grid, columna de nombre fija (sticky) y línea de tiempo 00–24 del horario
  * completo: no se pueden hacer bien con estilos en línea. Plan §7.4,
  * diferencia aceptada §7.8-3 («en jefatura, la tabla semanal mantiene scroll
- * horizontal con el nombre fijo»).
+ * horizontal con el nombre fijo»). En 390 px el menú pasa a barra superior
+ * (src/app/jefatura.css) para que esa columna fija no tape las celdas.
  */
 
 .ss-horario-scroll {
@@ -11,6 +12,10 @@
 
 .ss-horario-tabla {
   min-width: 1100px;
+}
+
+.ss-horario-dia {
+  min-width: 770px;
 }
 
 .ss-fila-horario {
@@ -211,5 +216,23 @@
   }
   100% {
     background-position: 0 50%;
+  }
+}
+
+@media (max-width: 700px) {
+  .ss-fila-horario {
+    grid-template-columns: 160px repeat(7, minmax(90px, 1fr)) 90px;
+  }
+
+  .ss-fila-dia {
+    grid-template-columns: 160px minmax(240px, 1fr) 120px 72px;
+  }
+
+  .ss-horario-tabla {
+    min-width: 940px;
+  }
+
+  .ss-horario-dia {
+    min-width: 640px;
   }
 }

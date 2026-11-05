@@ -9,8 +9,8 @@ enlaces para compartir.
 Si algo se decide distinto durante la implementación, se escribe un ADR y se actualiza el plan en
 el mismo cambio.
 
-**Estado: Fase 0 sin empezar.** Todavía no hay código ni `package.json`. Lo que existe es el plan,
-las referencias de diseño y esta documentación. Ver `docs/progreso.md`.
+**Estado: Fases 0–7 hechas. Fase 8 hecha en local y bloqueada en la nube** (sin proyectos
+Supabase ni preview de Vercel, por decisión de jefatura). Ver `docs/progreso.md`.
 
 ## Antes de empezar cualquier tarea
 

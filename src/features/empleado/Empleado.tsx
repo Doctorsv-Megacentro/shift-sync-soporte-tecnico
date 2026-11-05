@@ -13,7 +13,6 @@ import { VistaPersona } from './VistaPersona.tsx';
 type Estado =
   | { tipo: 'cargando' }
   | { tipo: 'inactivo' }
-  | { tipo: 'alcance-no-disponible' }
   | { tipo: 'error' }
   | { tipo: 'ok'; vista: VistaCompartida };
 
@@ -65,9 +64,6 @@ export function Empleado() {
   if (estado.tipo === 'cargando') return <Esqueleto />;
   if (estado.tipo === 'inactivo') {
     return <Mensaje>Este enlace ya no está activo. Pide uno nuevo a jefatura.</Mensaje>;
-  }
-  if (estado.tipo === 'alcance-no-disponible') {
-    return <Mensaje>Este enlace todavía no está disponible. Pide uno nuevo a jefatura.</Mensaje>;
   }
   if (estado.tipo === 'error') {
     return <Mensaje>No se pudo cargar el horario. Vuelve a intentarlo.</Mensaje>;

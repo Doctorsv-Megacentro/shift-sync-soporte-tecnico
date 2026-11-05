@@ -1,9 +1,9 @@
 # Vista de empleado
 
-**Qué hace (para el usuario):** cualquiera con el enlace de la operación (`/s/:slug`, sin cuenta)
-escribe su nombre, ve su semana y el detalle del día seleccionado — incluido un cambio hecho por
-jefatura, si lo hay — y quién más está trabajando ese día en tres alcances: mismo horario, su
-equipo, o toda la operación. Es el **primer entregable usable** del plan (Fase 3).
+**Qué hace (para el usuario):** cualquiera con un enlace (`/s/:slug`, sin cuenta) ve el horario
+dentro de su alcance: operación, semana, día, persona o cambio. Cuando el enlace lo permite busca su
+nombre; siempre puede ver quién más trabaja ese día. Es el **primer entregable usable** del plan
+(Fase 3), completado con los alcances de la Fase 7.
 
 **Dónde:** `/s/:slug` · capturas de referencia `01-empleado-mi-dia.png` a `05-empleado-movil.png`.
 
@@ -19,10 +19,9 @@ flowchart LR
   F --> G["VistaPersona.tsx"]
 ```
 
-`Empleado.tsx` resuelve el estado de la carga antes de pintar nada más: **cargando** (esqueleto),
-**inactivo** (enlace vencido/revocado/inexistente — mismo mensaje para los tres, a propósito),
-**alcance-no-disponible** (un alcance que todavía no existe, como `semana` o `dia` antes de la Fase
-7), **error** (falló la red), u **ok** con la `VistaCompartida` ya lista para `VistaPersona`.
+`Empleado.tsx` resuelve el estado antes de pintar: **cargando**, **inactivo** (inexistente,
+parámetros inválidos, vencido o revocado: el mismo mensaje a propósito), **error** u **ok**.
+`VistaPersona` aplica las restricciones de `scope + params`.
 
 ## Archivos
 
@@ -33,9 +32,9 @@ flowchart LR
 | `src/features/empleado/almacenPersona.ts` | Recuerda la última persona vista, por slug, en `localStorage` |
 | `src/features/empleado/empleado.css` | Grid de la semana y el toggle escritorio/móvil a 560 px |
 | `src/data/sharedView.ts` | Llama `get_shared_view` y reconstruye `ParsedMonth[]` / `DayOverride[]` |
-| `src/data/shareLinks.ts` | Crear, consultar y revocar el enlace de la operación (usado desde Fuente) |
+| `src/data/shareLinks.ts` | Crear, listar y revocar enlaces de los cinco alcances |
 | `src/domain/overlay.ts` | Mezcla la hoja con los cambios de jefatura: el «horario efectivo» (ADR-0003) |
-| `src/domain/share.ts` | Slug aleatorio, vencimiento, si un enlace sigue vigente |
+| `src/domain/share.ts` | Alcances, parámetros, slug, vencimiento y restricciones de navegación |
 | `src/domain/presence.ts` | Reutilizado tal cual de la Fase 1: buscador, semana, «quién está ese día» |
 | `src/ui/colorRol.ts` | Colores por rol y por categoría de turno (mañana/tarde/noche), para los chips |
 | `src/features/fuente/EnlaceOperacion.tsx` | Botón mínimo en Fuente de datos: crear/copiar/revocar el enlace |
@@ -64,8 +63,8 @@ departamento a mitad de mes, cuál de las dos department apareció primero depen
 - **Multi-mes sin cortes:** `combinarMeses()` junta todos los meses de la vista en uno solo para que
   la navegación de semana no se corte en el límite de un mes (p. ej. una semana que empieza en
   octubre y termina en noviembre).
-- **Vencimiento del enlace (plan §7.6):** solo `fin-de-mes` en esta fase (`24h`/`7d` ya existen en
-  `domain/share.ts` para la Fase 7). `calcularVencimiento('fin-de-mes')` es el primer instante del
+- **Vencimiento del enlace (plan §7.6):** 24 horas, 7 días o fin de mes.
+  `calcularVencimiento('fin-de-mes')` es el primer instante del
   mes siguiente, hora local de quien crea el enlace — un instante real, no un día de negocio
   (ADR-0008 no aplica aquí).
 - **Slug:** `prefijo-` + 12 caracteres base62 de `crypto.getRandomValues` (`domain/share.ts`), no el
@@ -79,18 +78,15 @@ departamento a mitad de mes, cuál de las dos department apareció primero depen
 | Situación | Mensaje | Por qué |
 |---|---|---|
 | Slug que no existe, vencido o revocado | «Este enlace ya no está activo. Pide uno nuevo a jefatura.» | Mismo mensaje para los tres: no da pistas a quien prueba slugs al azar |
-| Alcance que no sea `operacion` | «Este enlace todavía no está disponible. Pide uno nuevo a jefatura.» | `semana`/`dia`/`persona`/`cambio` llegan en la Fase 7 |
 | Falla la red/RPC | «No se pudo cargar el horario. Vuelve a intentarlo.» | — |
 
 ## Pruebas
 
 - `tests/domain/overlay.test.ts` (10 casos): un cambio reemplaza el turno pero conserva el
   departamento; sin cambio, la entrada original; `tieneCambio` para el punto naranja.
-- `tests/domain/share.test.ts` (10 casos): slug con el prefijo y largo esperados, las tres opciones
-  de vencimiento, un enlace revocado nunca está vigente aunque no haya vencido.
-- `tests/db/get_shared_view.test.ts` (11 casos, `npm run test:db`): slug inválido/vencido/revocado
-  dan `ENLACE_INACTIVO`; `anon` no puede leer `share_links` directo; un alcance que no sea
-  `operacion` da `ALCANCE_NO_DISPONIBLE`; un cambio de jefatura vigente aparece sin exponer quién lo
+- `tests/domain/share.test.ts`: slug, tres vencimientos y restricciones de los alcances.
+- `tests/db/get_shared_view.test.ts` (`npm run test:db`): slug inválido/vencido/revocado
+  da `ENLACE_INACTIVO`; `anon` no lee `share_links`; hay una prueba por alcance; un cambio vigente aparece sin exponer quién lo
   hizo, uno revocado no aparece; **un usuario con sesión también puede llamar la función, no solo
   `anon`** (ver «Bug real encontrado» abajo); **un import que cubre dos meses no mezcla las entradas
   de un mes con las del otro** (regresión del mismo bug).
@@ -152,4 +148,3 @@ estructura de `Empleado.dc.html`; los textos «¿Quién eres?», «Tu semana», 
   «a hoy» en otro lugar de la interfaz.
 - «Pasar a Google Calendar», «Avisos para marcar», «Cronómetro de horas» y «Vista de mes»: cajas
   «Próximamente», sin lógica (plan §7.1).
-- Los alcances `semana`, `dia`, `persona`, `cambio` de `share_links` (Fase 7).

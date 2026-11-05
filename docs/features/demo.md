@@ -4,13 +4,12 @@
 busca su nombre, ve su semana, su día y quién más está trabajando ese día. Todo ocurre en el
 navegador; nada se guarda ni se envía a ningún sitio.
 
-**Dónde:** se monta como la pantalla raíz de la aplicación (`App.tsx`) mientras la demo esté activa.
-Sin captura de referencia propia: reutiliza la idea de las capturas 01–04 del plan
+**Dónde:** `/demo`. La raíz `/` redirige a `/jefe/fuente`. Sin captura de referencia propia:
+reutiliza la idea de las capturas 01–04 del plan
 (`referencias/diseno/capturas/01-empleado-mi-dia.png` y siguientes), simplificada.
 
-> **Esta pantalla es desechable.** Existe para validar el dominio y los nombres con jefatura antes de
-> construir la infraestructura de la Fase 2. La Fase 3 construye la vista de empleado real —con
-> enlaces, alcance y fidelidad visual completa— y en ese momento `src/features/demo/` se retira.
+> **Esta pantalla es desechable.** ADR-0014 decía retirarla al existir la vista real de empleado
+> (Fase 3). Sigue montada a propósito, fuera del flujo de producción, hasta un PR de limpieza.
 > Decisión: [ADR-0014](../adr/0014-demo-local-antes-de-fase-2.md) (**Propuesto**).
 
 ## Cómo funciona

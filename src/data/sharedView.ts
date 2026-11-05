@@ -5,7 +5,7 @@
  */
 
 import type { DayOverride } from '@/domain/overlay.ts';
-import type { ShareScope } from '@/domain/share.ts';
+import type { ShareParams, ShareScope } from '@/domain/share.ts';
 import type { ParsedMonth } from '@/domain/types.ts';
 import { reconstruirMes, reconstruirOverride, type MesCrudo, type OverrideCrudo } from './meses.ts';
 import { supabase } from './supabase.ts';
@@ -18,6 +18,7 @@ export interface FuenteInfo {
 
 interface VistaCruda {
   readonly scope: ShareScope;
+  readonly params: ShareParams;
   readonly title: string | null;
   readonly source: FuenteInfo | null;
   readonly months: readonly MesCrudo[];
@@ -26,6 +27,7 @@ interface VistaCruda {
 
 export interface VistaCompartida {
   readonly scope: ShareScope;
+  readonly params: ShareParams;
   readonly title: string | null;
   readonly source: FuenteInfo | null;
   readonly months: readonly ParsedMonth[];
@@ -34,7 +36,6 @@ export interface VistaCompartida {
 
 export type ResultadoVista =
   | { tipo: 'inactivo' }
-  | { tipo: 'alcance-no-disponible' }
   | { tipo: 'ok'; vista: VistaCompartida };
 
 /** Pide la vista pública de un enlace. Nunca lanza: el estado va en el resultado. */
@@ -44,7 +45,6 @@ export async function obtenerVistaCompartida(slug: string): Promise<ResultadoVis
 
   const cruda = data as VistaCruda | { error: string };
   if ('error' in cruda) {
-    if (cruda.error === 'ALCANCE_NO_DISPONIBLE') return { tipo: 'alcance-no-disponible' };
     return { tipo: 'inactivo' };
   }
 
@@ -52,6 +52,7 @@ export async function obtenerVistaCompartida(slug: string): Promise<ResultadoVis
     tipo: 'ok',
     vista: {
       scope: cruda.scope,
+      params: cruda.params ?? {},
       title: cruda.title,
       source: cruda.source,
       months: cruda.months.map(reconstruirMes),

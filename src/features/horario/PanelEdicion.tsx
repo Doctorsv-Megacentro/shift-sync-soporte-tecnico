@@ -278,6 +278,9 @@ export function PanelEdicion({
               {sedeDistinta ? ` · ${sede}` : ''}
             </span>
           </span>
+          <span style={{ fontSize: 12, color: 'var(--apagado)' }}>
+            Avisar por notificación · Próximamente
+          </span>
           {error !== null && <span style={{ fontSize: 13, color: 'var(--peligro)' }}>{error}</span>}
         </div>
 

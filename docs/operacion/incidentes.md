@@ -23,14 +23,27 @@ en estado **Propuesto**, y `../progreso.md`, bloqueo 1.
 
 **Síntoma.** Todo falla a la vez: ni jefatura entra ni los enlaces abren. Errores de conexión.
 
-**Causa probable.** El plan gratuito de Supabase pausa los proyectos sin actividad.
+**Causa probable.** En el plan gratuito, Supabase puede pausar un proyecto con poca actividad
+durante 7 días. Supabase envía un aviso aproximadamente una semana antes.
 
 **Qué hacer.**
-1. Entrar al panel de Supabase y reactivar el proyecto.
+1. Entrar al panel de Supabase y restaurar el proyecto. La restauración desde el panel está
+   disponible durante 90 días después de la pausa.
 2. Comprobar que la aplicación vuelve: cargar el panel y abrir un enlace de empleado.
+3. Si el panel ya no permite restaurarlo, recuperar la base desde el último `pg_dump` siguiendo
+   [respaldo.md](respaldo.md).
 
-**Mitigación pendiente:** confirmar la política actual del plan gratuito y decidir cómo evitarlo
-(por ejemplo, una consulta periódica). Queda para la **Fase 8**.
+**Mitigación.**
+
+- Revisar los avisos de Supabase y la aplicación al menos una vez por semana.
+- La actividad real de uso suele evitar la pausa; no se programa tráfico artificial solo para
+  mantener el proyecto despierto.
+- Si la operación necesita disponibilidad garantizada aun durante semanas sin uso, pasar a un plan
+  que no pause proyectos antes de poner el sistema en producción.
+
+Fuente consultada el 2026-11-04:
+[Free Project Pausing](https://supabase.com/docs/guides/platform/free-project-pausing).
+Hoy no hay un proyecto Supabase en la nube; este procedimiento se aplica cuando se aprovisione.
 
 ## 3. Un enlace de empleado no funciona
 

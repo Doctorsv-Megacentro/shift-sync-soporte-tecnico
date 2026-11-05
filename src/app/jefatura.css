@@ -1,0 +1,86 @@
+/**
+ * Cáscara de jefatura: menú lateral en escritorio y barra superior bajo
+ * 700 px, para que la grilla de 390 px no quede tapada por el menú.
+ * Ficha: docs/features/horario.md.
+ */
+
+.ss-jefatura {
+  display: flex;
+  min-height: 100vh;
+}
+
+.ss-jefatura-nav {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--borde-suave);
+  padding: 1.5rem 1rem;
+  background: var(--superficie);
+}
+
+.ss-jefatura-nav .marca {
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.ss-jefatura-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ss-jefatura-nav li {
+  margin-bottom: 4px;
+}
+
+.ss-jefatura-sesion {
+  margin-top: 32px;
+  border-top: 1px solid var(--borde-suave);
+  padding-top: 16px;
+}
+
+.ss-jefatura-cuerpo {
+  flex: 1;
+  padding: 2rem;
+  overflow: auto;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .ss-jefatura {
+    flex-direction: column;
+  }
+
+  .ss-jefatura-nav {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--borde-suave);
+    padding: 0.85rem 1rem 0.7rem;
+  }
+
+  .ss-jefatura-nav .marca {
+    margin-bottom: 10px;
+  }
+
+  .ss-jefatura-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .ss-jefatura-nav li {
+    margin-bottom: 0;
+  }
+
+  .ss-jefatura-sesion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .ss-jefatura-cuerpo {
+    padding: 1rem;
+  }
+}

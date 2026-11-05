@@ -458,7 +458,8 @@ La **clave estable** de un conflicto se forma como `regla:alcance`, por ejemplo 
 - un nombre con coma;
 - «Adminsitrador de Redes»;
 - 12 cambios de departamento y 1 salida contra octubre;
-- 17 descansos de 8–9 h.
+- 12 descansos de 8–9 h (la cifra 17 del borrador no se reproduce: con la fórmula escrita hay 12
+  descansos de 8 h y uno de 9 h exactas, que no entra por ser el límite superior).
 
 Métricas del lun 2 nov:
 - En turno 73 de 103, libres 29, vacaciones 1, cruzan medianoche 9.

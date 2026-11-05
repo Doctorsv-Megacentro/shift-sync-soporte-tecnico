@@ -37,6 +37,8 @@ export interface CambioDiaPayload {
   readonly reason: string;
   readonly note: string | null;
   readonly supportPersonKey: string | null;
+  /** Clave del conflicto que este cambio resuelve, si se guarda desde el panel. */
+  readonly conflictKey?: string | null;
 }
 
 /** Guarda un cambio de jefatura para un día. Si ya había uno vigente, lo revoca (plan §7.5). */
@@ -52,6 +54,7 @@ export async function guardarCambioDia(payload: CambioDiaPayload): Promise<void>
       reason: payload.reason,
       note: payload.note,
       support_person_key: payload.supportPersonKey,
+      conflict_key: payload.conflictKey ?? null,
     },
   });
   if (error) throw error;

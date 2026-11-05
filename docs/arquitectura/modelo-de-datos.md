@@ -4,8 +4,8 @@ Tablas, RLS y funciones RPC. Fuente: plan §5.6.
 
 > **Estado: implementado.** El esquema inicial crea las tablas, el RLS y `is_admin`,
 > `publish_import`, `activate_import`. Después se añadieron `get_shared_view` (Fase 3),
-> `get_admin_schedule` (Fase 4) y `save_day_override` / `revoke_day_override` (Fase 5). Verificado
-> con `tests/db/` (46 casos) y a mano en el navegador contra el fixture anonimizado.
+> `get_admin_schedule` (Fase 4), `save_day_override` / `revoke_day_override` (Fase 5), las RPC del
+> panel (Fase 6) y los cinco alcances de `get_shared_view` (Fase 7). Verificado con `tests/db/`.
 
 ## Diagrama
 
@@ -114,21 +114,25 @@ Funciones RPC, todas `security definer` y con `search_path` fijo:
 | `is_admin()` → `bool` | cualquiera autenticado | Compara el correo del JWT contra `admins` |
 | `publish_import(payload jsonb)` → `uuid` | solo admin | En **una transacción**: inserta en `imports`, hace *upsert* de `people` por `key`, escribe `schedule_entries` y apunta `month_versions` a la nueva versión |
 | `activate_import(import_id, month)` | solo admin | Vuelve a una versión anterior |
-| `get_shared_view(slug)` → `jsonb` | **`anon`** | La única vía de lectura pública: valida que el enlace no esté vencido ni revocado, actualiza `last_opened_at` y devuelve personas, entradas de los meses activos dentro del alcance y cambios vigentes (motivo, nota y fecha; **nunca quién lo hizo**) |
-| `get_admin_schedule()` → `jsonb` | solo admin | El horario completo de jefatura, misma forma que `get_shared_view` para toda la operación, sin pasar por `share_links` |
-| `save_day_override(payload jsonb)` → `uuid` | solo admin | En **una transacción**: revoca el cambio vigente de esa persona y fecha, si lo hay, e inserta el nuevo |
+| `get_shared_view(slug)` → `jsonb` | **`anon`** | La única vía de lectura pública: valida vigencia y parámetros, actualiza `last_opened_at` y filtra fechas/personas según `operacion`, `semana`, `dia`, `persona` o `cambio`; devuelve cambios sin autor |
+| `get_admin_schedule()` → `jsonb` | solo admin | El horario completo de jefatura, sin pasar por `share_links`. Desde la Fase 6 incluye `displayNameSource`, `conflictKey` en cada cambio y la lista `acks` |
+| `save_day_override(payload jsonb)` → `uuid` | solo admin | Valida persona/apoyo, tipo, horas, sede y motivo; en **una transacción** revoca el cambio vigente e inserta el nuevo. También guarda `conflict_key` |
 | `revoke_day_override(person_key, date)` | solo admin | Revoca el vigente. No falla si ya no hay nada que revocar («Volver a lo de la hoja» y «Deshacer») |
+| `ack_conflict(key, note)` → `uuid` | solo admin | Revoca el «aceptado» vigente de esa clave e inserta otro (`conflict_acks`) |
+| `revoke_conflict_ack(key)` | solo admin | Deshace el «aceptado como está» vigente de esa clave |
+| `set_person_display_name(key, name)` | solo admin | Fija el nombre visible y `display_name_source = manual`. Vacío → `NOMBRE_VACIO`; persona inexistente → `PERSONA_DESCONOCIDA` |
 
 ## Cómo verificarlo
 
 ```
 npx supabase start   # stack local, puertos 55320-55329 (ver supabase/config.toml)
-npm run test:db       # 46 casos: RLS, publish_import, get_shared_view, get_admin_schedule, cambiar un día
+npm run test:db       # RLS, importación, cinco alcances, horario, cambiar un día y panel
 ```
 
 `tests/db/rls.test.ts` comprueba que `anon` no lee ni escribe ninguna tabla y que un usuario no admin
 no puede llamar `publish_import`. `tests/db/publish_import.test.ts` comprueba el *upsert* de
 personas, que `content_hash` evita publicar dos veces lo mismo, que `display_name` manual no se
 pisa, y que `activate_import` cambia la versión activa y rechaza un mes que no cubre.
-`get_shared_view`, `get_admin_schedule` y `save_day_override` / `revoke_day_override` tienen sus
-propios archivos en `tests/db/`. Ver [../operacion/migraciones.md](../operacion/migraciones.md).
+`get_shared_view`, `get_admin_schedule`, `save_day_override` / `revoke_day_override` y las tres RPC
+del panel (`tests/db/conflictos.test.ts`) tienen sus propios archivos en `tests/db/`. Ver
+[../operacion/migraciones.md](../operacion/migraciones.md).

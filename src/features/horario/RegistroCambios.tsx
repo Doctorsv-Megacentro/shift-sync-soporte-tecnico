@@ -1,10 +1,11 @@
 /**
- * El registro de cambios: lista de todos los cambios de jefatura vigentes,
- * con «Deshacer». Plan §7.5, captura 14. Ficha: docs/features/horario.md.
+ * El registro de cambios: lista de cambios vigentes, con «Compartir» y
+ * «Deshacer». Plan §7.5–§7.6. Ficha: docs/features/horario.md.
  */
 
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
 import { deshacerCambioDia } from '@/data/horario.ts';
 import type { DayOverride } from '@/domain/overlay.ts';
 import { diaDe, type IndiceMes } from '@/domain/presence.ts';
@@ -91,6 +92,12 @@ export function RegistroCambios({
                     <span style={{ fontSize: 12, color: 'var(--texto-3)' }}>Jefatura · {fechaYHora(o.createdAt)}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
+                    <Link
+                      to={`/jefe/compartir?scope=cambio&person=${encodeURIComponent(o.personKey)}&date=${o.date}`}
+                      style={estiloBotonEnlace}
+                    >
+                      Compartir
+                    </Link>
                     <button
                       type="button"
                       disabled={procesando === clave}

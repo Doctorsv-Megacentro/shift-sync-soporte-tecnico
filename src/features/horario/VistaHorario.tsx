@@ -1,13 +1,13 @@
 /**
  * El horario completo de jefatura: filtros, vista Semana (grupos por
  * departamento, grid con nombre fijo), vista Día (línea de tiempo 00–24), el
- * panel «Cambiar un día» y el registro de cambios. Plan §7.4 y §7.5. Solo
- * «Compartir» (los alcances que no son «toda la operación») queda
- * deshabilitado hasta la Fase 7. Ficha: docs/features/horario.md.
+ * panel «Cambiar un día», el registro y entradas hacia Compartir. Plan
+ * §7.4–§7.6. Ficha: docs/features/horario.md.
  */
 
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
 import type { HorarioCompleto } from '@/data/horario.ts';
 import { ROLES, SEDES } from '@/domain/catalog.ts';
 import {
@@ -71,7 +71,7 @@ export function VistaHorario({ horario, onCambio }: { horario: HorarioCompleto; 
   const [personaVista, setPersonaVista] = useState<string | null>(null);
   const [edicion, setEdicion] = useState<{ personaKey: string; date: DateKey } | null>(null);
   const [registroAbierto, setRegistroAbierto] = useState(false);
-  const [flash, setFlash] = useState<string | null>(null);
+  const [flash, setFlash] = useState<{ mensaje: string; personKey: string | null; date: DateKey | null } | null>(null);
 
   function abrirEdicion(personaKey: string, date: DateKey) {
     setPersonaVista(null);
@@ -79,8 +79,13 @@ export function VistaHorario({ horario, onCambio }: { horario: HorarioCompleto; 
   }
 
   async function alGuardar(mensaje: string) {
+    const compartible = mensaje.startsWith('Cambio guardado:') ? edicion : null;
     setEdicion(null);
-    setFlash(mensaje);
+    setFlash({
+      mensaje,
+      personKey: compartible?.personaKey ?? null,
+      date: compartible?.date ?? null,
+    });
     await onCambio();
   }
 
@@ -123,15 +128,26 @@ export function VistaHorario({ horario, onCambio }: { horario: HorarioCompleto; 
           <button type="button" onClick={() => setRegistroAbierto(true)} style={estiloBotonSecundario}>
             Cambios · {horario.overrides.length}
           </button>
-          <button type="button" disabled title="Próximamente" style={estiloBotonDeshabilitado}>
+          <Link
+            to={`/jefe/compartir?scope=semana&date=${diaSeleccionado}&site=${encodeURIComponent(filtros.site)}&role=${encodeURIComponent(filtros.role)}`}
+            style={estiloBotonSecundario}
+          >
             Compartir
-          </button>
+          </Link>
         </div>
       </header>
 
       {flash !== null && (
         <div role="status" style={estiloFlash}>
-          <span style={{ flex: '1 1 300px' }}>{flash}</span>
+          <span style={{ flex: '1 1 300px' }}>{flash.mensaje}</span>
+          {flash.personKey !== null && flash.date !== null && (
+            <Link
+              to={`/jefe/compartir?scope=cambio&person=${encodeURIComponent(flash.personKey)}&date=${flash.date}`}
+              style={estiloBotonEnlaceFlash}
+            >
+              Compartir este cambio
+            </Link>
+          )}
           <button type="button" onClick={() => setFlash(null)} style={estiloBotonEnlaceFlash}>
             Cerrar
           </button>
@@ -544,7 +560,7 @@ function VistaDia({
   const ayer = addDays(dia, -1);
 
   return (
-    <div className="ss-horario-tabla" style={{ minWidth: 900 }}>
+    <div className="ss-horario-dia">
       <div className="ss-fila-dia" style={{ borderBottom: '1px solid var(--borde)' }}>
         <span className="ss-nombre-col" style={{ fontSize: 11, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--texto-3)', fontWeight: 600 }}>
           {nombreDia(dia)} {dia.slice(-2)}
@@ -743,9 +759,12 @@ function VistaRapida({
           <button type="button" onClick={() => onEditar(persona.key, diaReferencia)} style={estiloBotonSecundario}>
             Editar {nombreDia(diaReferencia)} {diaReferencia.slice(-2)}
           </button>
-          <button type="button" disabled title="Próximamente" style={estiloBotonDeshabilitadoSecundario}>
+          <Link
+            to={`/jefe/compartir?scope=persona&person=${encodeURIComponent(persona.key)}&date=${diaReferencia}`}
+            style={estiloBotonSecundario}
+          >
             Compartir su horario
-          </button>
+          </Link>
         </div>
       </aside>
     </>
@@ -857,23 +876,9 @@ const estiloBotonSecundario: CSSProperties = {
   color: 'var(--texto)',
   cursor: 'pointer',
   fontSize: 14,
-};
-
-const estiloBotonDeshabilitado: CSSProperties = {
-  minHeight: 'var(--tactil-min)',
-  padding: '0 14px',
-  borderRadius: 'var(--radio-control)',
-  border: '1px solid var(--borde-suave)',
-  background: 'var(--fondo)',
-  color: 'var(--apagado)',
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: 'not-allowed',
-};
-
-const estiloBotonDeshabilitadoSecundario: CSSProperties = {
-  ...estiloBotonDeshabilitado,
-  background: 'var(--superficie)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  textDecoration: 'none',
 };
 
 const estiloBotonNombre: CSSProperties = {

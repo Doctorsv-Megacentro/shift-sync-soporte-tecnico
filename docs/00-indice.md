@@ -46,9 +46,9 @@ Una ficha por carpeta de `src/features/`. `docs:check` falla si falta alguna.
 | Fuente de datos (subir, publicar, historial, acceso de jefatura) | [features/fuente.md](features/fuente.md) |
 | Vista de empleado (`/s/:slug`, sin cuenta, primer entregable usable) | [features/empleado.md](features/empleado.md) |
 | Horario completo (`/jefe/horario`, grilla Semana/Día de jefatura) | [features/horario.md](features/horario.md) |
+| Panel y conflictos (`/jefe/panel`) | [features/panel.md](features/panel.md) |
+| Compartir (`/jefe/compartir`, cinco alcances y enlaces activos) | [features/compartir.md](features/compartir.md) |
 | Demo local de la vista de empleado (desechable, ADR-0014) | [features/demo.md](features/demo.md) |
-
-Pendientes, según se construyan: `panel`, `compartir`.
 
 ## Diseño
 
@@ -80,6 +80,7 @@ Nunca se borra un ADR: se marca *Reemplazado por NNNN*. Plantilla:
 | [0014](adr/0014-demo-local-antes-de-fase-2.md) | Demo local de la vista de empleado, antes de la Fase 2 | **Propuesto** |
 | [0015](adr/0015-enrutador.md) | Enrutador: React Router | Aceptado |
 | [0016](adr/0016-horario-completo-fase-4.md) | Horario completo: alcance de la Fase 4 y meses combinados | **Propuesto** |
+| [0017](adr/0017-corte-escalonado-de-v1.md) | Corte escalonado de v1 a v2, preparado pero no ejecutado | **Propuesto** |
 
 ## Operación (runbooks)
 
