@@ -12,6 +12,7 @@ import { aplicarCambios, buscarOverride, indexarOverrides, type DayOverride } fr
 import {
   agruparPorEntrada,
   buscarPersonas,
+  combinarMeses,
   diaDe,
   indexarMes,
   quienEsta,
@@ -43,19 +44,6 @@ const ETIQUETA_ALCANCE: Record<Alcance, string> = {
 function hoyDateKey(): DateKey {
   const d = new Date();
   return toDateKey(d.getFullYear(), d.getMonth() + 1, d.getDate()) ?? '1970-01-01';
-}
-
-/** Junta los meses de la vista en uno solo, para navegar semanas sin cortes de mes. */
-function combinarMeses(meses: readonly ParsedMonth[]): ParsedMonth {
-  const personas = new Map(meses.flatMap((m) => m.people).map((p) => [p.key, p]));
-  return {
-    sheetName: 'combinado',
-    hidden: false,
-    month: meses[0]?.month ?? '',
-    dates: meses.flatMap((m) => m.dates),
-    people: [...personas.values()],
-    entries: meses.flatMap((m) => m.entries),
-  };
 }
 
 function textoDelDia(shift: ShiftValue | undefined): string {

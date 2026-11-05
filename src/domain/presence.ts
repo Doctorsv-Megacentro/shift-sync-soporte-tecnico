@@ -27,6 +27,24 @@ export interface GrupoEntrada {
   readonly personas: readonly Presente[];
 }
 
+/**
+ * Junta varios meses en uno solo, para navegar semanas o días sin que se
+ * corten en el límite de un mes (p. ej. una semana que empieza en octubre y
+ * termina en noviembre). Usado por la vista de empleado y el horario
+ * completo de jefatura.
+ */
+export function combinarMeses(meses: readonly ParsedMonth[]): ParsedMonth {
+  const personas = new Map(meses.flatMap((m) => m.people).map((p) => [p.key, p]));
+  return {
+    sheetName: 'combinado',
+    hidden: false,
+    month: meses[0]?.month ?? '',
+    dates: meses.flatMap((m) => m.dates),
+    people: [...personas.values()],
+    entries: meses.flatMap((m) => m.entries),
+  };
+}
+
 /** Índice de un mes, para no recorrer las entradas en cada consulta. */
 export interface IndiceMes {
   readonly personas: ReadonlyMap<string, SheetPerson>;

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   agruparPorEntrada,
   buscarPersonas,
+  combinarMeses,
   contarPorHorario,
   diaDe,
   indexarMes,
@@ -214,6 +215,43 @@ describe('metricasDelDia', () => {
 
   it('un día que no está en el mes da todo a cero', () => {
     expect(metricasDelDia(indice, '2026-12-25')).toMatchObject({ enTurno: 0, libres: 0 });
+  });
+});
+
+describe('combinarMeses', () => {
+  function plantillaDiciembre(): ParsedMonth {
+    const libro = construirLibro([{
+      nombre: 'Diciembre',
+      filas: [
+        ['', '', 'martes'],
+        ['', '', serial('2026-12-01')],
+        // Misma persona que en noviembre (ANA): no debe duplicarse.
+        ['MEGA N1', 'ROSALES ANA LUCIA', '06:00-15:00'],
+        ['MEGA N1', 'TORRES LUIS', '06:00-15:00'],
+      ],
+    }]);
+    const mes = parseWorkbook(libro).months[0];
+    if (mes === undefined) throw new Error('El fixture no produjo un mes');
+    return mes;
+  }
+
+  it('junta las fechas y entradas de todos los meses', () => {
+    const combinado = combinarMeses([mes, plantillaDiciembre()]);
+    expect(combinado.dates).toEqual([...mes.dates, '2026-12-01']);
+    expect(combinado.entries).toHaveLength(mes.entries.length + 2);
+  });
+
+  it('no duplica una persona que aparece en más de un mes', () => {
+    const combinado = combinarMeses([mes, plantillaDiciembre()]);
+    const claves = combinado.people.map((p) => p.key);
+    expect(claves.filter((k) => k === ANA)).toHaveLength(1);
+    expect(claves).toContain('LUIS TORRES');
+  });
+
+  it('un solo mes se combina igual a sí mismo', () => {
+    const combinado = combinarMeses([mes]);
+    expect(combinado.dates).toEqual(mes.dates);
+    expect(combinado.entries).toHaveLength(mes.entries.length);
   });
 });
 
