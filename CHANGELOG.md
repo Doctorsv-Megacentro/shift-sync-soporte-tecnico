@@ -67,6 +67,20 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   entregable usable del MVP** (ficha: docs/features/empleado.md).
 - Botón de crear/copiar/revocar el enlace de la operación en Fuente de datos
   (`src/features/fuente/EnlaceOperacion.tsx`).
+- `get_admin_schedule` (`supabase/migrations/20261104190000_get_admin_schedule.sql`): RPC interna,
+  solo para `is_admin()`, con el horario completo de toda la operación y los cambios vigentes, sin
+  pasar por `share_links`.
+- `domain/grid.ts`: agrupar personas por departamento, filtrar por nombre/sede/rol, y la posición de
+  las barras de la línea de tiempo 00–24 (turno de hoy recortado a medianoche, y la parte de un turno
+  de ayer que cruza, como barra punteada).
+- Pantalla **Horario completo** en `/jefe/horario` (`src/features/horario/`): vista Semana (grupos
+  por departamento plegables, grid con nombre fijo) y vista Día (línea de tiempo), filtros, y panel de
+  vista rápida de una persona. Solo lectura en esta fase: «Cambios», «Compartir» y «Editar» quedan
+  deshabilitados hasta las Fases 5 y 7 (ADR-0016 **Propuesto**; ficha: docs/features/horario.md).
+- `src/data/meses.ts`: la reconstrucción de jsonb a tipos de dominio, compartida entre la vista de
+  empleado y el horario completo (antes vivía solo en `data/sharedView.ts`).
+- `domain/presence.ts` gana `combinarMeses` (antes vivía solo en `VistaPersona.tsx`), para que el
+  horario completo también navegue semanas sin cortarse en el límite de un mes.
 
 ### Corregido
 
@@ -78,6 +92,10 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   doble de personas de las que trabajaban ese día, y una persona mostraba un departamento distinto en
   la cabecera y en la tarjeta del día. Corregido filtrando también por fecha dentro del mes de cada
   versión; regresión cubierta en `tests/db/get_shared_view.test.ts`.
+- La barra punteada del turno de «ayer» en la vista Día del horario completo no se veía: usaba el
+  tono de **fondo** de la categoría del turno (muy claro) como `color` del borde punteado
+  (`border: 1px dashed currentColor`), casi invisible contra el fondo de la línea de tiempo.
+  Corregido usando el tono de **texto**, más oscuro.
 
 ### Seguridad
 

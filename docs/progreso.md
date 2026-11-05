@@ -9,13 +9,57 @@ Estado del MVP de ShiftSync v2. Se actualiza en **cada** cambio (Definición de 
 | — | Demo local (adelanto de la Fase 3, fuera del plan) | **Hecho** | Probada en navegador. ADR-0013/0014 Propuestos |
 | 2 | Base de datos, acceso de jefatura y Fuente de datos | **Hecho** | Opus. Esquema + RLS + RPC probados contra Supabase local; falta proyecto en la nube |
 | 3 | Vista empleado + enlace de la operación | **Hecho** | Sonnet. **Primer entregable usable** |
-| 4 | Horario completo | **Siguiente** | Sonnet |
-| 5 | Cambiar un día + registro de cambios | Sin empezar | Sonnet |
+| 4 | Horario completo | **Hecho** | Sonnet. Solo lectura (ADR-0016); Cambiar un día llega en la Fase 5 |
+| 5 | Cambiar un día + registro de cambios | **Siguiente** | Sonnet |
 | 6 | Panel y conflictos | Sin empezar | Opus |
 | 7 | Compartir completo | Sin empezar | Sonnet |
 | 8 | Producción | Sin empezar | Opus, en sesión nueva (revisión independiente) |
 
 ## Último cambio
+
+**4 nov 2026 · Fase 4 cerrada: horario completo de jefatura (solo lectura).**
+
+`get_admin_schedule()` (`supabase/migrations/20261104190000_get_admin_schedule.sql`): RPC interna
+para jefatura, sin pasar por `share_links`, que solo comprueba `is_admin()` y devuelve el mismo
+`months`/`overrides` que `get_shared_view` para toda la operación — reutilizando el mismo filtro por
+fecha dentro del mes de cada versión (la lección de la Fase 3) para no reintroducir la misma
+duplicación. `src/data/meses.ts` saca la reconstrucción jsonb→dominio de `sharedView.ts` a un módulo
+compartido, y `domain/presence.ts` gana `combinarMeses` (antes vivía solo en `VistaPersona.tsx`), que
+ahora usan tanto la vista de empleado como el horario completo.
+
+`domain/grid.ts` (14 pruebas nuevas): agrupa por departamento (no por rol, porque dos departamentos
+pueden compartir rol), filtra por nombre/sede/rol, y calcula la posición de las barras de la vista
+Día — el turno de hoy, recortado a medianoche, y la parte de un turno de **ayer** que cruzó, como
+barra punteada desde las 00:00.
+
+La pantalla real en `/jefe/horario` (`src/features/horario/`): vista Semana (grupos plegables, grid
+con nombre fijo, celda coloreada por categoría, punto naranja si hay un cambio de jefatura), vista
+Día (línea de tiempo 00–24), filtros, y un panel de vista rápida al tocar un nombre. Siguiendo
+ADR-0016 (**Propuesto**): como `GridOps.dc.html` mezcla las Fases 4, 5 y 7 en un solo prototipo,
+«Cambios», «Compartir» y «Editar» quedan deshabilitados con un indicador «Próximamente», y la
+pantalla combina todos los meses activos (como la vista de empleado) en vez del selector de un mes
+del mockup, para que una semana no se corte en el límite de un mes.
+
+**Otro bug real, encontrado probando en el navegador con datos reales, no solo con pruebas
+automáticas**: la barra punteada de «ayer» no se veía en absoluto. La causa: el código usaba el tono
+de **fondo** de la categoría del turno (un pastel muy claro) como `color` CSS para un borde
+`1px dashed currentColor` — contra el fondo claro de la línea de tiempo, ese borde quedaba
+invisible. Se vio al probar con un turno real `20:00–06:00` y mirar el día siguiente: el texto decía
+«hasta 06:00 (de ayer)» pero no había ningún trazo. Corregido usando el tono de **texto** de la
+categoría (más oscuro, pensado para contraste) — que es justo lo que hace el mockup.
+
+**38 pruebas de base de datos** en verde (`npm run test:db`): las 32 de la Fase 3 más las 6 nuevas de
+`get_admin_schedule` (autorización — anon no puede, un autenticado sin ser admin tampoco, un admin
+sí —, datos de un mes publicado, un cambio sin exponer quién lo hizo, y la regresión del bug de
+duplicación de meses). **217 pruebas unitarias** en total.
+
+**Probado de punta a punta en el navegador** con el fixture anonimizado real (106 personas, 26
+departamentos, octubre y noviembre en un solo import, igual que en la Fase 3): vista Semana y Día con
+datos reales, plegar/desplegar grupos, los tres filtros combinados, la vista rápida de una persona, y
+navegar semanas cruzando el límite de mes (30 nov – 6 dic, con diciembre todavía sin publicar
+mostrando «Sin datos» en vez de romperse). Sin errores ni warnings en consola.
+
+El stack local de Supabase y el servidor de desarrollo se apagaron al terminar.
 
 **4 nov 2026 · Fase 3 cerrada: vista de empleado + enlace de la operación.**
 
@@ -165,22 +209,28 @@ El stack local de Supabase y el servidor de desarrollo se apagaron al terminar
 
 ## Siguiente paso
 
-**Fase 4 — Horario completo** (Sonnet). La pantalla de jefatura con la grilla semanal/diaria de toda
-la operación (`GridOps.dc.html`, capturas 10, 17, 18), scroll horizontal con el nombre fijo en móvil,
-y la vista rápida de una persona desde la grilla.
+**Fase 5 — Cambiar un día + registro de cambios** (Sonnet). El panel de edición sobre
+`/jefe/horario` (capturas 11–13b): turno/libre/vacaciones, horarios rápidos por departamento, alerta
+de descanso (avisa, no bloquea), sede del día, compañeros con el mismo horario, motivo + nota, y
+guardar como `day_override`. El registro de cambios (captura 14) con «Deshacer». Esta fase activa los
+botones «Cambios», «Editar» y «Editar {día}» que la Fase 4 dejó deshabilitados (ADR-0016) — ya
+reciben `get_admin_schedule` y `domain/overlay.ts` tal cual, solo falta el panel para crear un
+cambio.
 
-Pendiente de esta sesión, para retomar antes o durante la Fase 4:
+Pendiente de sesiones anteriores, para retomar cuando toque:
 
 - **`src/features/demo/` sigue sin retirarse.** ADR-0014 dice que se retira cuando la vista real de
-  empleado exista — ya existe (Fase 3) — pero no se tocó esta sesión por no ser parte del trabajo
-  pedido; sigue montada en `/demo` y documentada en `docs/features/demo.md`.
-- **390 px de `/s/:slug` sin verificar pixel a pixel** contra `05-empleado-movil.png` (ver ficha,
-  docs/features/empleado.md, «Pendiente»).
-- Marcar en `docs/diseno/pantallas.md` las capturas 01, 03 y 04 como revisadas cuando se haga esa
-  comparación visual (hoy la Fase 3 está probada funcionalmente, no pixel-perfect).
+  empleado exista — ya existe desde la Fase 3 — pero no se tocó por no ser parte del trabajo pedido;
+  sigue montada en `/demo` y documentada en `docs/features/demo.md`.
+- **390 px sin verificar pixel a pixel** en `/s/:slug` (Fase 3) ni en `/jefe/horario` (Fase 4;
+  en jefatura el móvil mantiene scroll horizontal con el nombre fijo, plan §7.8-3, no una fila de dos
+  líneas como en empleado).
+- Marcar en `docs/diseno/pantallas.md` las capturas 01, 03, 04, 10, 17 y 18 como revisadas cuando se
+  haga esa comparación visual (hoy las Fases 3 y 4 están probadas funcionalmente, no pixel-perfect).
 
-Antes de la Fase 4, conviene cerrar el visto bueno de Ado a los ADR-0013 y 0014 (ambos en
-**Propuesto**; ninguno bloquea técnicamente, pero son desviaciones del plan que piden su ratificación).
+Antes de la Fase 5, conviene cerrar el visto bueno de Ado a los ADR-0013, 0014 y 0016 (todos en
+**Propuesto**; ninguno bloquea técnicamente, pero son desviaciones del plan que piden su
+ratificación).
 
 ### Hallazgos sobre la hoja real que quedan para después
 

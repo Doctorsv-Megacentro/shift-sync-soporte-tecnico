@@ -24,7 +24,7 @@ fase.
 | Jefe · Fuente · subir Excel | `/jefe/fuente` | `07-jefe-fuente-excel.png` | `Fuente.dc.html` | 2 | ☐ |
 | Jefe · Panel y conflictos | `/jefe/panel` | `08-jefe-panel-conflictos.png` | `DashOps.dc.html` | 6 | ☐ |
 | Jefe · conflicto con opción elegida | `/jefe/panel` | `09-jefe-conflicto-opcion-elegida.png` | `DashOps.dc.html` | 6 | ☐ |
-| Jefe · Horario · Semana | `/jefe/horario` | `10-jefe-horario-semana.png` | `GridOps.dc.html` | 4 | ☐ |
+| Jefe · Horario · Semana | `/jefe/horario` | `10-jefe-horario-semana.png` | `GridOps.dc.html` | 4 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 | Jefe · Cambiar un día (inicial) | `/jefe/horario` | `11-jefe-editar-dia.png` | `GridOps.dc.html` | 5 | ☐ |
 | Jefe · Cambiar un día con datos | `/jefe/horario` | `12-jefe-editar-dia-con-cambios.png` | `GridOps.dc.html` | 5 | ☐ |
 | Jefe · cambio guardado | `/jefe/horario` | `13-jefe-cambio-guardado.png` | `GridOps.dc.html` | 5 | ☐ |
@@ -32,8 +32,8 @@ fase.
 | Jefe · Registro de cambios | `/jefe/horario` | `14-jefe-registro-de-cambios.png` | `GridOps.dc.html` | 5 | ☐ |
 | Jefe · Compartir | `/jefe/compartir` | `15-jefe-compartir.png` | `GridOps.dc.html` | 7 | ☐ |
 | Jefe · enlace copiado | `/jefe/compartir` | `16-jefe-compartir-copiado.png` | `GridOps.dc.html` | 7 | ☐ |
-| Jefe · vista rápida de persona | `/jefe/horario` | `17-jefe-vista-rapida-persona.png` | `GridOps.dc.html` | 4 | ☐ |
-| Jefe · Horario · Día | `/jefe/horario` | `18-jefe-horario-dia.png` | `GridOps.dc.html` | 4 | ☐ |
+| Jefe · vista rápida de persona | `/jefe/horario` | `17-jefe-vista-rapida-persona.png` | `GridOps.dc.html` | 4 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
+| Jefe · Horario · Día | `/jefe/horario` | `18-jefe-horario-dia.png` | `GridOps.dc.html` | 4 | ☐ (funcional, falta revisión pixel a pixel — ADR-0016) |
 
 ## Diferencias aceptadas entre el mockup y la implementación
 
