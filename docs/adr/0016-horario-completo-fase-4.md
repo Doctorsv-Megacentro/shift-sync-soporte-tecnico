@@ -46,12 +46,19 @@ en uno solo (`domain/presence.ts`, `combinarMeses`).
   problema de corte de semana que la Fase 3 ya resolvió para empleados; jefatura vería una semana
   incompleta al cruzar de mes.
 
+## Actualización — Fase 5 (2026-11-04)
+
+El punto 1 queda así: tocar una celda, «Cambios · n», «Editar» de la vista Día y «Editar {día}» de
+la vista rápida **ya abren** el panel y el registro. El texto de ayuda de la cabecera volvió al
+literal del mockup. **«Compartir»** (el de la cabecera, «Compartir su horario» de la vista rápida y
+el del registro) sigue deshabilitado hasta la Fase 7. Los puntos 2 y 3 no cambian.
+
 ## Consecuencias
 
-- La Fase 5 reutiliza `get_admin_schedule` y `domain/overlay.ts` tal cual: ya traen los cambios de
-  jefatura vigentes y el horario efectivo, solo falta el panel para crear uno nuevo.
-- `docs/diseno/pantallas.md` marca las capturas 10, 17 y 18 cuando se revisen contra la
-  implementación; 11–16 siguen pendientes de sus fases.
+- La Fase 5 reutilizó `get_admin_schedule` y `domain/overlay.ts` tal cual, y añadió
+  `save_day_override` / `revoke_day_override` para crear y deshacer un cambio.
+- `docs/diseno/pantallas.md` marca las capturas 10–14, 17 y 18 como funcionales, pendientes de
+  revisión pixel a pixel. 15 y 16 siguen para la Fase 7.
 - Si una captura real de Fase 4 muestra algo que contradiga estas decisiones, se corrige aquí antes
   de la Fase 5.
 
@@ -59,5 +66,6 @@ en uno solo (`domain/presence.ts`, `combinarMeses`).
 
 Probado a mano en el navegador con el fixture real: la vista Semana y Día muestran octubre y
 noviembre sin cortar una semana a la mitad, los grupos se pliegan y despliegan, los filtros de
-nombre/sede/rol funcionan, y los controles de «Cambios», «Compartir» y «Editar» se ven pero no hacen
-nada, con el texto de ayuda ajustado.
+nombre/sede/rol funcionan. En la Fase 4, «Cambios», «Compartir» y «Editar» se veían pero no hacían
+nada. Desde la Fase 5, «Cambios» y «Editar» abren el panel y el registro; «Compartir» sigue sin
+hacer nada.

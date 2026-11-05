@@ -9,13 +9,42 @@ Estado del MVP de ShiftSync v2. Se actualiza en **cada** cambio (Definición de 
 | — | Demo local (adelanto de la Fase 3, fuera del plan) | **Hecho** | Probada en navegador. ADR-0013/0014 Propuestos |
 | 2 | Base de datos, acceso de jefatura y Fuente de datos | **Hecho** | Opus. Esquema + RLS + RPC probados contra Supabase local; falta proyecto en la nube |
 | 3 | Vista empleado + enlace de la operación | **Hecho** | Sonnet. **Primer entregable usable** |
-| 4 | Horario completo | **Hecho** | Sonnet. Solo lectura (ADR-0016); Cambiar un día llega en la Fase 5 |
-| 5 | Cambiar un día + registro de cambios | **Siguiente** | Sonnet |
-| 6 | Panel y conflictos | Sin empezar | Opus |
+| 4 | Horario completo | **Hecho** | Sonnet. La edición de un día se cerró en la Fase 5 (ADR-0016) |
+| 5 | Cambiar un día + registro de cambios | **Hecho** | Sonnet. «Compartir» sigue para la Fase 7 |
+| 6 | Panel y conflictos | **Siguiente** | Opus |
 | 7 | Compartir completo | Sin empezar | Sonnet |
 | 8 | Producción | Sin empezar | Opus, en sesión nueva (revisión independiente) |
 
 ## Último cambio
+
+**4 nov 2026 · Fase 5 cerrada: cambiar un día y registro de cambios.**
+
+`domain/edicion.ts` (15 pruebas): los horarios más frecuentes de un departamento, los avisos de
+descanso y quién coincide o puede dar apoyo. Los umbrales de 8 h y 12 h son los **Propuestos** del
+bloqueo §2: el plan §7.5 ya los usa en esta pantalla, y siguen sin confirmarse.
+
+`save_day_override` y `revoke_day_override`
+(`supabase/migrations/20261104200000_cambiar_un_dia.sql`): guardar revoca el cambio vigente de esa
+persona y fecha e inserta el nuevo en la misma transacción; deshacer revoca y no falla si ya no hay
+nada. 8 pruebas nuevas en `tests/db/cambiar_un_dia.test.ts`. **46 pruebas de base de datos** en
+verde.
+
+El panel en `/jefe/horario` (`PanelEdicion.tsx`, `RegistroCambios.tsx`) abre desde una celda, desde
+«Editar» de la vista Día y desde «Editar {día}» de la vista rápida. «Compartir» sigue deshabilitado
+(Fase 7). ADR-0016 queda actualizado: el punto 1 ya no apaga esos botones. La ficha de la Fase 4 se
+amplió; no hay ficha nueva porque es la misma pantalla.
+
+**Bug real, encontrado al reabrir un día ya cambiado:** el panel precargaba el horario y el apoyo,
+pero el motivo y la nota salían vacíos, así que «Guardar cambio» pedía el motivo otra vez. El
+mockup sí los recupera. Corregido y reverificado: al reabrir, motivo, nota y apoyo siguen marcados.
+
+**Probado de punta a punta en el navegador** con el fixture anonimizado (octubre 98 personas,
+noviembre 103): celda con el valor de la hoja, horarios rápidos reales del departamento, aviso de
+descanso al poner `06:00-14:00` después de un `21:00-06:00` sin bloquear el guardado, compañeros y
+apoyo, aviso verde, borde punteado en la celda, registro con «Deshacer» y «Volver a lo de la hoja».
+Sin errores en la consola.
+
+El stack local de Supabase y el servidor de desarrollo se apagaron al terminar.
 
 **4 nov 2026 · Fase 4 cerrada: horario completo de jefatura (solo lectura).**
 
@@ -209,13 +238,11 @@ El stack local de Supabase y el servidor de desarrollo se apagaron al terminar
 
 ## Siguiente paso
 
-**Fase 5 — Cambiar un día + registro de cambios** (Sonnet). El panel de edición sobre
-`/jefe/horario` (capturas 11–13b): turno/libre/vacaciones, horarios rápidos por departamento, alerta
-de descanso (avisa, no bloquea), sede del día, compañeros con el mismo horario, motivo + nota, y
-guardar como `day_override`. El registro de cambios (captura 14) con «Deshacer». Esta fase activa los
-botones «Cambios», «Editar» y «Editar {día}» que la Fase 4 dejó deshabilitados (ADR-0016) — ya
-reciben `get_admin_schedule` y `domain/overlay.ts` tal cual, solo falta el panel para crear un
-cambio.
+**Fase 6 — Panel y conflictos** (Opus). `/jefe/panel` (plan §7.3 y §6, capturas 08–09): métricas del
+día, cobertura y las 16 reglas de `docs/datos/reglas-conflictos.md`. Resolver un conflicto de
+cobertura crea un `day_override` (la Fase 5 ya dejó `save_day_override`). Los umbrales del bloqueo
+§2 siguen **Propuestos**, así que las reglas que dependen de ellos se implementan con esos valores
+y el ADR que las fije no pasa de «Propuesto».
 
 Pendiente de sesiones anteriores, para retomar cuando toque:
 
@@ -225,12 +252,12 @@ Pendiente de sesiones anteriores, para retomar cuando toque:
 - **390 px sin verificar pixel a pixel** en `/s/:slug` (Fase 3) ni en `/jefe/horario` (Fase 4;
   en jefatura el móvil mantiene scroll horizontal con el nombre fijo, plan §7.8-3, no una fila de dos
   líneas como en empleado).
-- Marcar en `docs/diseno/pantallas.md` las capturas 01, 03, 04, 10, 17 y 18 como revisadas cuando se
-  haga esa comparación visual (hoy las Fases 3 y 4 están probadas funcionalmente, no pixel-perfect).
+- Marcar en `docs/diseno/pantallas.md` las capturas 01, 03, 04 y 10–14, 17 y 18 como revisadas
+  cuando se haga esa comparación visual (hoy las Fases 3, 4 y 5 están probadas funcionalmente, no
+  pixel-perfect).
 
-Antes de la Fase 5, conviene cerrar el visto bueno de Ado a los ADR-0013, 0014 y 0016 (todos en
-**Propuesto**; ninguno bloquea técnicamente, pero son desviaciones del plan que piden su
-ratificación).
+Conviene cerrar el visto bueno de Ado a los ADR-0013, 0014 y 0016 (todos en **Propuesto**; ninguno
+bloquea técnicamente, pero son desviaciones del plan que piden su ratificación).
 
 ### Hallazgos sobre la hoja real que quedan para después
 

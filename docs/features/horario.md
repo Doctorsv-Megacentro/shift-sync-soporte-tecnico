@@ -2,12 +2,12 @@
 
 **Qué hace (para el usuario):** jefatura ve el horario de toda la operación en una grilla semanal
 (nombre fijo, un día por columna) o en una línea de tiempo por día, agrupado por departamento, con
-filtros de nombre/sede/rol. Toca un nombre para ver la semana de esa persona en un panel lateral.
-**Fase 4 del plan: solo lectura.** Cambiar un día, el registro de cambios y compartir alcances
-distintos a «toda la operación» llegan en las Fases 5 y 7 (ADR-0016).
+filtros de nombre/sede/rol. Toca un nombre para ver la semana de esa persona. Toca una celda (o
+«Editar») para cambiar ese día: turno, libre o vacaciones, sede, apoyo, motivo y nota. El cambio se
+guarda como capa encima de la hoja (ADR-0003) y se puede deshacer desde el registro «Cambios · n».
+Compartir alcances distintos a «toda la operación» sigue en la Fase 7 (ADR-0016, actualizado).
 
-**Dónde:** `/jefe/horario` · capturas de referencia `10-jefe-horario-semana.png`,
-`17-jefe-vista-rapida-persona.png` y `18-jefe-horario-dia.png`.
+**Dónde:** `/jefe/horario` · capturas `10`, `11`–`14`, `17` y `18`.
 
 ## Cómo funciona
 
@@ -20,6 +20,10 @@ flowchart LR
   E --> F["domain/overlay.ts\naplicarCambios"]
   F --> G["domain/grid.ts\nagrupar, filtrar, barras"]
   G --> H["VistaHorario.tsx\nSemana / Día"]
+  H --> I["PanelEdicion.tsx\nCambiar un día"]
+  H --> J["RegistroCambios.tsx\nDeshacer"]
+  I --> K["RPC save_day_override\n/ revoke_day_override"]
+  J --> K
 ```
 
 `Horario.tsx` resuelve cargando/error antes de pintar `VistaHorario.tsx`, igual que `Empleado.tsx`
@@ -30,14 +34,18 @@ en la Fase 3.
 | Archivo | Responsabilidad |
 |---|---|
 | `src/features/horario/Horario.tsx` | Punto de entrada: pide el horario, resuelve el estado |
-| `src/features/horario/VistaHorario.tsx` | La pantalla: filtros, vista Semana, vista Día, vista rápida |
-| `src/features/horario/horario.css` | Grid, columna de nombre fija y línea de tiempo 00–24 |
-| `src/data/horario.ts` | Llama `get_admin_schedule` y reconstruye los tipos del dominio |
+| `src/features/horario/VistaHorario.tsx` | La pantalla: filtros, vista Semana, vista Día, vista rápida, aviso verde |
+| `src/features/horario/PanelEdicion.tsx` | Panel «Cambiar un día» (plan §7.5) |
+| `src/features/horario/RegistroCambios.tsx` | Registro «Cambios de jefatura · n» y «Deshacer» |
+| `src/features/horario/horario.css` | Grid, columna de nombre fija, línea de tiempo 00–24 y la columna «Editar» de la vista Día |
+| `src/data/horario.ts` | `get_admin_schedule`, `guardarCambioDia` y `deshacerCambioDia` |
 | `src/data/meses.ts` | Reconstrucción jsonb → dominio, compartida con `sharedView.ts` (Fase 3) |
+| `src/domain/edicion.ts` | Horarios frecuentes, avisos de descanso y compañeros/apoyo |
 | `src/domain/grid.ts` | Agrupar por departamento, filtrar, posición de las barras de la vista Día |
 | `src/domain/presence.ts` | `combinarMeses` (compartido con la vista de empleado), índice, semana |
 | `src/domain/overlay.ts` | El horario efectivo: hoja + cambios de jefatura (Fase 3) |
 | `supabase/migrations/20261104190000_get_admin_schedule.sql` | RPC interna, solo `is_admin()` |
+| `supabase/migrations/20261104200000_cambiar_un_dia.sql` | `save_day_override` y `revoke_day_override` |
 
 ## Datos
 
@@ -65,8 +73,26 @@ esa reconstrucción de `sharedView.ts` a un módulo compartido para que `horario
   punteada desde las 00:00 (`barraDeAyer`), con el texto «hasta HH:MM (de ayer)». Quien solo tiene
   esa barra punteada (su turno real de hoy es Libre) sigue apareciendo en la lista de «en turno», no
   en el texto de libres — igual que el mockup.
-- **Tocar una celda, «Cambios», «Compartir» y «Editar» están deshabilitados** con un indicador
-  «Próximamente»: esas acciones son de las Fases 5 y 7 (ADR-0016, punto 1).
+- **Cambiar un día (plan §7.5).** El panel se abre desde una celda de la vista Semana, desde
+  «Editar» en la vista Día o desde «Editar {día}» en la vista rápida. Muestra el valor de la hoja y
+  precarga el valor efectivo. Con Turno: hasta 6 horarios rápidos, los más frecuentes del
+  departamento en los meses cargados (`turnosFrecuentes`). Sede del día (la habitual marcada
+  «(su sede)»). Compañeros con el mismo horario exacto y, por solape, hasta 8 candidatos de apoyo
+  (`companerosYApoyo`), respetando la sede efectiva de cada persona ese día. Motivo obligatorio (las
+  6 opciones del mockup) y nota opcional. «Guardar cambio» queda deshabilitado sin motivo o sin
+  horas válidas. Si el día ya tiene un cambio, aparecen «Volver a lo de la hoja» y, al reabrir, el
+  motivo, la nota y el apoyo que se guardaron.
+- **Avisos de descanso: avisan, no bloquean.** Menos de 8 h respecto al turno de ayer o de mañana, o
+  un turno de más de 12 h (`DESCANSO_MINIMO_MIN` y `TURNO_MAXIMO_MIN` en `domain/edicion.ts`). Son
+  los valores **Propuestos** del bloqueo §2 de `docs/progreso.md`: el plan §7.5 ya los usa en esta
+  pantalla. No están confirmados y no se marcan como Aceptados.
+- **Guardar y deshacer.** `save_day_override` revoca el vigente de esa persona y fecha e inserta el
+  nuevo en la misma transacción (el índice único no permite dos vigentes). `revoke_day_override` lo
+  usa tanto «Volver a lo de la hoja» como «Deshacer» del registro, y no falla si ya no hay nada que
+  revocar. Tras guardar, un aviso verde con el texto literal del plan y la grilla vuelve a pedirse
+  sin pasar por el esqueleto de carga, para no perder filtros ni grupos plegados.
+- **«Compartir» sigue deshabilitado** (cabecera, vista rápida y el del registro): Fase 7. El texto
+  de ayuda de la cabecera volvió al literal del mockup (ADR-0016, actualización de la Fase 5).
 
 ## Pruebas
 
@@ -80,6 +106,12 @@ esa reconstrucción de `sharedView.ts` a un módulo compartido para que `horario
   admin recibe un error, un admin sí puede, los datos de un mes publicado, un cambio de jefatura sin
   exponer quién lo hizo, y la misma regresión de Fase 3 (un import que cubre dos meses no mezcla sus
   entradas).
+- `tests/domain/edicion.test.ts` (15 casos): los horarios más frecuentes y el desempate alfabético,
+  los tres avisos de descanso (ayer, mañana y turno largo) sin avisar cuando el descanso alcanza, y
+  compañeros exactos frente a apoyo por solape, incluida una sede cambiada por un override.
+- `tests/db/cambiar_un_dia.test.ts` (8 casos): `anon` y un autenticado sin ser admin no pueden
+  guardar ni revocar; un admin crea el cambio y `get_admin_schedule` lo muestra vigente; guardar
+  otra vez el mismo día revoca el anterior; deshacer lo quita y un segundo deshacer no falla.
 
 ### Bug real encontrado probando en el navegador
 
@@ -92,11 +124,28 @@ y mirar el día siguiente: el texto decía «hasta 06:00 (de ayer)» pero no hab
 Corregido usando el tono de **texto** de la categoría (el más oscuro, pensado para contraste), que es
 exactamente lo que el mockup hace (`color` es el tono de texto de su clase `k-n`, no el de fondo).
 
-- **Probado a mano en el navegador** con el fixture anonimizado real (106 personas, 26 departamentos,
-  octubre y noviembre en un solo import): vista Semana y Día con datos reales, plegar/desplegar un
-  grupo, los tres filtros combinados, la vista rápida de una persona, navegar semanas incluido el
-  límite de mes (30 nov – 6 dic), y confirmar que «Cambios», «Compartir» y «Editar» se ven pero no
-  hacen nada. Sin errores ni warnings en consola.
+- **Probado a mano en el navegador** (Fase 4) con el fixture anonimizado real (106 personas, 26
+  departamentos, octubre y noviembre en un solo import): vista Semana y Día, grupos, filtros, vista
+  rápida y semanas que cruzan el límite de mes.
+
+### Bug real encontrado probando en el navegador (Fase 5)
+
+Al volver a abrir un día que ya tenía un cambio, el panel precargaba el horario y el apoyo, pero el
+motivo y la nota salían vacíos. «Guardar cambio» quedaba deshabilitado hasta elegir el motivo otra
+vez, aunque el cambio ya existía. El mockup (`blankForm` en `GridOps.dc.html`) sí recupera motivo,
+nota y apoyo del cambio vigente. Corregido inicializando esos campos desde el override. Reverificado
+en el navegador: al reabrir, «Permiso», la nota y el compañero de apoyo seguían marcados, y «Volver
+a lo de la hoja» seguía visible.
+
+- **Probado a mano en el navegador** (Fase 5), con el mismo fixture publicado en el stack local:
+  tocar una celda precarga el valor de la hoja; los horarios rápidos son turnos reales del
+  departamento (no un placeholder); poner `06:00-14:00` el día siguiente a un `21:00-06:00` muestra
+  el aviso de descanso y **no** bloquea «Guardar cambio»; aparecen compañeros con ese horario y
+  candidatos de apoyo; al guardar, el aviso verde usa el texto del plan, el panel se cierra y la
+  celda queda con borde punteado y punto naranja; el registro lista el cambio (antes → ahora,
+  motivo, «Jefatura · cuándo») y «Deshacer» lo quita de la lista y de la grilla; «Volver a lo de la
+  hoja» restaura el valor original; «Editar» de la vista Día y «Editar {día}» de la vista rápida
+  abren el mismo panel. «Compartir» sigue deshabilitado. Sin errores en la consola.
 
 ## Decisiones
 
@@ -105,18 +154,16 @@ exactamente lo que el mockup hace (`color` es el tono de texto de su clase `k-n`
 
 ## Origen
 
-Reescrito desde cero sobre la estructura de `GridOps.dc.html` (plan §7.4), que en realidad cubre tres
-fases (4, 5 y 7) en un solo prototipo — ver ADR-0016 para qué se tomó de ahí y qué se dejó para
-después. Los textos «Horario completo», «Buscar persona», «Sede», «Rol», «Semana», «Día», «Hoy»,
-«Mañana / día», «Tarde», «Noche (+1)», «Vacaciones», «Cambiado por jefatura», «Nadie coincide con
-estos filtros.» son literales del mockup. El texto de ayuda de la cabecera y los botones
-deshabilitados son la diferencia documentada en ADR-0016.
+Reescrito desde cero sobre la estructura de `GridOps.dc.html` (plan §7.4 y §7.5), que cubre tres
+fases (4, 5 y 7) en un solo prototipo — ver ADR-0016. Los textos del panel («Cambiar un día»,
+«Turno» / «Libre» / «Vacaciones», «Sede ese día», «(su sede)», «Compañeros con el nuevo horario»,
+«Asignar apoyo con (opcional)», los 6 motivos, «Guardar cambio», «Cancelar», «Volver a lo de la
+hoja», «Cambios de jefatura» y «Todavía no hay cambios…») son literales del mockup. El texto de
+ayuda de la cabecera también volvió a ser el literal.
 
 ## Pendiente / Próximamente
 
-- Tocar una celda para cambiar un día, «Cambios · n» con su registro, «Editar» y «Compartir su
-  horario» desde la vista rápida: Fase 5.
-- El diálogo completo de «Compartir» con los cinco alcances: Fase 7.
-- Comparación pixel a pixel contra las capturas 10/17/18 (hoy la pantalla es funcional, probada con
-  datos reales, pero no se revisó contra la captura real — igual que Fuente y Empleado en fases
-  anteriores).
+- El diálogo completo de «Compartir» (cabecera, vista rápida, registro y «Compartir este cambio»):
+  Fase 7.
+- Comparación pixel a pixel contra las capturas 10–14, 17 y 18 (la pantalla es funcional y está
+  probada con datos reales; no se revisó contra la captura real).

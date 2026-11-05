@@ -81,6 +81,10 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   empleado y el horario completo (antes vivía solo en `data/sharedView.ts`).
 - `domain/presence.ts` gana `combinarMeses` (antes vivía solo en `VistaPersona.tsx`), para que el
   horario completo también navegue semanas sin cortarse en el límite de un mes.
+- **Cambiar un día** en `/jefe/horario`: panel para turno, libre o vacaciones, horarios rápidos del
+  departamento, aviso de descanso (avisa y no bloquea), sede del día, compañeros y apoyo, motivo y
+  nota. El cambio se guarda como capa sobre la hoja y se puede deshacer desde «Cambios · n» o con
+  «Volver a lo de la hoja» (ficha: docs/features/horario.md; ADR-0016 actualizado).
 
 ### Corregido
 
@@ -96,6 +100,8 @@ Cada entrada se escribe **en lenguaje de usuario**, con la ficha y el ADR entre 
   tono de **fondo** de la categoría del turno (muy claro) como `color` del borde punteado
   (`border: 1px dashed currentColor`), casi invisible contra el fondo de la línea de tiempo.
   Corregido usando el tono de **texto**, más oscuro.
+- Al reabrir un día ya cambiado, el panel no recuperaba el motivo ni la nota, así que «Guardar
+  cambio» pedía elegir el motivo otra vez. Ahora precarga motivo, nota y apoyo, como el mockup.
 
 ### Seguridad
 
